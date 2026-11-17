@@ -12,6 +12,7 @@ const accountPath = validCode ? connectPath : '/account';
 menu.onclick = () => menu.setAttribute('aria-expanded', String(nav.classList.toggle('open')));
 
 const screenshot = (name, label) => `<div class="product app-screenshot ${name}-screenshot" role="img" aria-label="${label}"></div>`;
+const homeScreenshot = screenshot('home', 'Главная X.Vex с виджетами');
 const dashboard = screenshot('dashboard', 'Главная X.Vex с задачами, календарём и избранным');
 const note = screenshot('note', 'Заметка со списком идей и задач для прогулки');
 const board = screenshot('board', 'Доска с рисунками и стрелками между остановками прогулки');
@@ -43,11 +44,7 @@ function home() {
     <p>Заметки, доски и канбан — в одном спокойном пространстве.</p>
     <a class="button" href="/download">Скачать</a></section>
     <div class="hero-product">
-      ${dashboard}
-      <figure class="phone-preview">
-        <div class="phone-screen" aria-hidden="true"><span class="brand-mark"></span></div>
-        <figcaption>Мобильная версия<br>в разработке</figcaption>
-      </figure>
+      ${homeScreenshot}
     </div>
     <ul class="home-principles">
       <li><h2>Файлы в твоей папке</h2><p>Открой любую папку как хранилище и работай с материалами на компьютере.</p></li>

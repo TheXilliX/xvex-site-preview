@@ -76,7 +76,7 @@ const files = new Map([
   ['/theme.js', 'text/javascript; charset=utf-8'],
   ['/site.js', 'text/javascript; charset=utf-8'], ['/style.css', 'text/css; charset=utf-8'],
   ['/assets/icons.svg', 'image/svg+xml'], ['/assets/brand.svg', 'image/svg+xml'],
-  ...['mark', 'mark-on-dark', 'dashboard-light', 'dashboard-dark', 'note-light', 'note-dark',
+  ...['mark', 'mark-on-dark', 'home-light', 'home-dark', 'dashboard-light', 'dashboard-dark', 'note-light', 'note-dark',
     'board-light', 'board-dark', 'kanban-light', 'kanban-dark'].map(name => ['/assets/' + name + '.png', 'image/png']),
   ...['installer', 'folder-picker', ...['vaults', 'open-folder', 'updates', 'trash', 'restore']
     .flatMap(name => [name + '-light', name + '-dark'])].map(name => ['/assets/help-' + name + '.jpg', 'image/jpeg']),

@@ -13,12 +13,13 @@
     <a class="header-admin" href="/admin" hidden>Админ-панель</a>
   </div>
   <nav id="nav" aria-label="Основная навигация">
-    <a href="/">Главная</a><a href="/sync">Синхронизация</a><a href="/download">Скачать</a><a id="account-link" href="/login">Войти</a>
+    <a data-route="/" href="/">Главная</a><a data-route="/sync" href="/sync">Синхронизация</a><a data-route="/download" href="/download">Скачать</a>
   </nav>
   <button class="theme-toggle" type="button" aria-label="Сменить тему">
     <svg class="theme-moon" width="18" height="18" aria-hidden="true"><use href="/assets/icons.svg#moon"></use></svg>
     <svg class="theme-sun" width="18" height="18" aria-hidden="true"><use href="/assets/icons.svg#sun"></use></svg>
   </button>
+  <a id="account-link" class="header-account" href="/login">Аккаунт</a>
   <button class="menu" type="button" aria-controls="nav" aria-expanded="false" aria-label="Меню"><svg width="20" height="20" aria-hidden="true"><use href="/assets/icons.svg#menu"></use></svg></button>
 </header>
 <main id="main" class="wrap"></main>

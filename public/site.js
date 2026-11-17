@@ -11,25 +11,7 @@ const accountPath = validCode ? connectPath : '/account';
 
 menu.onclick = () => menu.setAttribute('aria-expanded', String(nav.classList.toggle('open')));
 
-const screenshot = (name, label) => `<button type="button" class="product app-screenshot ${name}-screenshot" data-preview="${name}" aria-label="Увеличить: ${label}"></button>`;
-document.addEventListener('click', event => {
-  const trigger = event.target instanceof Element && event.target.closest('[data-preview]');
-  if (!trigger) return;
-  const dark = document.documentElement.dataset.theme === 'dark';
-  const background = getComputedStyle(trigger, dark ? '::after' : null).backgroundImage;
-  const source = /^url\(["']?(.*?)["']?\)$/.exec(background)?.[1];
-  if (!source) return;
-  const dialog = document.createElement('dialog');
-  dialog.className = 'screenshot-lightbox';
-  dialog.setAttribute('aria-label', trigger.getAttribute('aria-label'));
-  const close = document.createElement('button');
-  close.type = 'button'; close.textContent = 'Закрыть'; close.onclick = () => dialog.close();
-  const image = document.createElement('img'); image.src = source; image.alt = trigger.getAttribute('aria-label');
-  dialog.append(close, image); document.body.append(dialog);
-  dialog.onclick = e => { if (e.target === dialog) dialog.close(); };
-  dialog.onclose = () => { dialog.remove(); trigger.focus({preventScroll:true}); };
-  dialog.showModal();
-});
+const screenshot = (name, label) => `<div role="img" class="product app-screenshot ${name}-screenshot" aria-label="${label}"></div>`;
 const homeScreenshot = screenshot('home', 'Главная X.Vex с виджетами');
 const dashboard = screenshot('dashboard', 'Главная X.Vex с задачами, календарём и избранным');
 const note = screenshot('note', 'Заметка со списком идей и задач для прогулки');
@@ -52,15 +34,15 @@ function intro(title, description) {
 function home() {
   const footer = document.querySelector('.site-footer');
   footer.classList.add('home-footer');
-  footer.innerHTML = `<a class="logo" href="/"><span class="brand-mark" aria-hidden="true"></span>X.Vex</a>
+  footer.innerHTML = `<p class="footer-note">Место для мыслей.<br>Пространство для действий.</p>
     <nav aria-label="Ссылки в подвале">
-      <div><strong>Приложение</strong><a href="/sync">Синхронизация</a><a href="/download">Скачать</a></div>
+      <div><strong>Приложение</strong><a href="/sync">Синхронизация</a><a href="/download">Скачать X.Vex</a></div>
       <div><strong>Ресурсы</strong><a href="/help">Справка</a><a href="${supportUrl}">Поддержка</a><a href="${releasesUrl}">История обновлений</a></div>
       <div><strong>Сообщество</strong><a href="${communityUrl}">Telegram</a></div>
     </nav>`;
   return `<section class="hero"><h1>Для идей, планов<br>и тараканов в голове.</h1>
     <p>Заметки, доски и канбан — в одном спокойном пространстве.</p>
-    <a class="button" href="/download">Скачать</a></section>
+    <a class="button" href="/download">Скачать X.Vex</a></section>
     <div class="hero-product">
       ${homeScreenshot}
       <figure class="hero-phone" aria-label="Главная X.Vex на телефоне">
@@ -68,27 +50,28 @@ function home() {
       </figure>
     </div>
     <ul class="home-principles">
-      <li><h2>Файлы в твоей папке</h2><p>Открой любую папку как хранилище и работай с материалами на компьютере.</p></li>
+      <li><h2>Твоё хранилище — рядом</h2><p>Выбери папку для хранилища. Заметки, доски и задачи останутся на твоём устройстве.</p></li>
       <li><h2>Работай без интернета</h2><p>Открывай и редактируй заметки, доски и задачи офлайн.</p></li>
-      <li><h2>Главная под твои задачи</h2><p>Расставь виджеты и держи рядом календарь, задачи и избранное.</p></li>
+      <li><h2>Важное — на главной</h2><p>Собери рабочий экран из заметок, колонок канбана и быстрых ссылок. Нужные материалы всегда под рукой.</p></li>
     </ul>
     <section class="home-example" aria-labelledby="tools-title">
-      <h2 id="tools-title">Инструменты для твоих идей</h2>
+      <span class="eyebrow">От первой мысли до готового дела</span><h2 id="tools-title">Дай идеям форму.</h2><p class="section-lead">Запиши мысль, разложи её на доске и преврати в конкретные шаги.</p>
+      <div class="tool-tabs" role="group" aria-label="Выбрать инструмент"><button type="button" data-tool="note" aria-pressed="true">Заметки</button><button type="button" data-tool="board" aria-pressed="false">Доски</button><button type="button" data-tool="kanban" aria-pressed="false">Канбан</button><button type="button" data-tool="dashboard" aria-pressed="false">Виджеты</button></div><div id="tool-preview">${note}</div>
       ${featureRows([
         ['Заметки', 'Записывай мысли и материалы для проектов. Используй заголовки, списки и чекбоксы, чтобы структурировать записи.', note],
         ['Доски', 'Раскладывай идеи на свободном холсте. Добавляй картинки, рисуй и связывай элементы стрелками.', board],
-        ['Канбан', 'Разбивай проект на карточки и перемещай их между колонками по мере работы.', kanban],
-        ['Виджеты', 'Выведи на главную нужные колонки канбана, календарь и быстрый доступ к материалам.', dashboard],
+        ['Канбан', 'Видишь следующий шаг — легче начать. Собери задачи в карточки и перемещай их от планов к результату.', kanban],
+        ['Виджеты', 'Добавь на главную заметки, колонки канбана и быстрый доступ к материалам. Расставь виджеты и выбери размер каждого под свой рабочий день.', dashboard],
       ])}
     </section>
     <section class="home-sync" aria-labelledby="sync-title">
       <h2 id="sync-title">Синхронизация между устройствами</h2>
-      <p>Готовим X.Vex Sync для доступа к своим материалам с разных устройств. Сейчас можно работать с локальным хранилищем.</p>
+      <p>Начни мысль на компьютере, продолжи на телефоне. Подключай хранилища через аккаунт X.Vex Sync, сохраняя доступ к локальным материалам без интернета.</p>
       <a class="button secondary" href="/sync">Подробнее о синхронизации</a>
     </section>
     <section class="home-download" aria-labelledby="download-title">
-      <h2 id="download-title">Попробуй X.Vex</h2>
-      <a class="button" href="/download">Скачать</a>
+      <h2 id="download-title">Меньше искать. Больше создавать.</h2>
+      <a class="button" href="/download">Скачать X.Vex</a>
     </section>
     <section class="home-community" aria-labelledby="community-title">
       <h2 id="community-title">Сообщество и помощь</h2>
@@ -102,7 +85,7 @@ function home() {
 }
 
 function sync() {
-  return intro('Синхронизация X.Vex', 'Тестовый доступ к X.Vex Sync выдаёт администратор.') + `<div class="sync-details narrow">
+  return intro('Твои идеи. На твоих устройствах.', 'Заметки, доски и задачи — в одном рабочем потоке.') + `<section class="sync-gallery"><div class="tool-tabs" role="group" aria-label="Материалы в хранилище"><button type="button" data-tool="note" aria-pressed="true">Заметки</button><button type="button" data-tool="board" aria-pressed="false">Доски</button><button type="button" data-tool="kanban" aria-pressed="false">Задачи</button></div><div id="tool-preview">${note}</div></section><div class="sync-details narrow">
     <section>
       <h2>Одно хранилище на нескольких устройствах</h2>
       <p>Войдите в один аккаунт на обоих устройствах. В «Настройки → Синхронизация» укажите одинаковое имя облачного хранилища.</p>
@@ -111,16 +94,16 @@ function sync() {
       <a href="/account">Проверить доступ в аккаунте</a>
     </section>
     <section id="pricing">
-      <h2>Стоимость</h2>
-      <p>Планируем предложить X.Vex Sync по подписке. Цену и условия опубликуем здесь ближе к запуску.</p>
+      <h2>Подключение сервиса</h2>
+      <p>Для подключения нужен настроенный сервер X.Vex Sync. Публичный сайт GitHub Pages показывает интерфейс, но не обслуживает аккаунты и синхронизацию.</p>
     </section>
   </div>`;
 }
 
 function download() {
-  return intro('Скачать X.Vex', 'Выбери свою платформу.') + `<div class="platforms narrow">
-    <section class="platform"><div><strong>Windows</strong><small id="windows-version">Windows x64 · установщик</small></div><a id="windows-download" class="button" href="/download/windows">Скачать для Windows</a></section>
-    <section class="platform"><div><strong>Android</strong><div class="channels"><span>Google Play</span><span>RuStore</span><span>APK</span></div></div><small>Скоро</small></section>
+  return `<header class="download-hero"><span class="brand-mark" aria-hidden="true"></span><h1>X.Vex</h1><p>Твоё пространство для идей и дел.</p><a class="button" href="https://github.com/TheXilliX/xvex-updates/releases/download/v0.1.20/X.Vex_0.1.20_x64-setup.exe" id="primary-download">Скачать для Windows</a><small>Windows x64 · версия 0.1.20</small></header><div class="platforms narrow"><h2>Все платформы</h2>
+    <section class="platform"><div><strong>Windows</strong><small id="windows-version">Windows x64 · установщик</small></div><a id="windows-download" class="button" href="https://github.com/TheXilliX/xvex-updates/releases/download/v0.1.20/X.Vex_0.1.20_x64-setup.exe">Скачать для Windows</a></section>
+    <section class="platform"><div><strong>Android</strong><small>ARM64 · версия 0.1.20</small><div class="channels"><span>Google Play — не опубликовано</span><span>RuStore — не опубликовано</span></div></div><a id="android-download" class="button secondary" href="https://github.com/TheXilliX/xvex-updates/releases/download/v0.1.20/X.Vex-0.1.20-Android-arm64.apk">Скачать APK</a></section>
     <section class="platform"><div><strong>iPhone и iPad</strong><div class="channels">App Store</div></div><small>Скоро</small></section>
     <section class="platform"><div><strong>macOS</strong><div class="channels">Mac App Store</div></div><small>Скоро</small></section>
     <section class="platform"><div><strong>Linux</strong></div><small>Скоро</small></section>
@@ -132,7 +115,7 @@ function helpShot(name, caption, themed = true) {
   const variants = themed ? ['-light', '-dark'] : [''];
   return `<figure class="help-shot">${variants.map(variant => {
     const src = `/assets/help-${name}${variant}.jpg`;
-    return `<a class="help-image${variant}" href="${src}" target="_blank" rel="noopener" aria-label="Открыть снимок полностью — ${caption}"><img src="${src}" alt="${caption}" loading="lazy" decoding="async"></a>`;
+    return `<div class="help-image${variant}"><img src="${src}" alt="${caption}" loading="lazy" decoding="async" draggable="false"></div>`;
   }).join('')}<figcaption>${caption}</figcaption></figure>`;
 }
 
@@ -487,8 +470,18 @@ document.title = pageTitle ? pageTitle + ' · X.Vex' : 'X.Vex';
 
 if (pages[path]) {
   main.innerHTML = pages[path]();
+  for (const button of main.querySelectorAll('[data-tool]')) button.onclick = () => {
+    main.querySelectorAll('[data-tool]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+    document.querySelector('#tool-preview').innerHTML = ({note, board, kanban, dashboard})[button.dataset.tool];
+  };
   if (path === '/' && location.hash === '#tools-title') document.querySelector('#tools-title').scrollIntoView();
   if (path === '/download') {
+    fetch('https://api.github.com/repos/TheXilliX/xvex-updates/releases/latest').then(r => { if (!r.ok) throw new Error(); return r.json(); }).then(release => {
+      const windows = release.assets.find(asset => /_x64-setup\.exe$/.test(asset.name));
+      const android = release.assets.find(asset => /Android-arm64\.apk$/.test(asset.name));
+      if (windows) { document.querySelector('#windows-download').href = windows.browser_download_url; document.querySelector('#primary-download').href = windows.browser_download_url; }
+      if (android) document.querySelector('#android-download').href = android.browser_download_url;
+    }).catch(() => {});
     api('release').then(({ version }) => {
       document.querySelector('#windows-version').textContent = 'Windows x64 · версия ' + version;
     }).catch(() => {});
@@ -522,7 +515,7 @@ if (email) {
   }
 }
 for (const link of nav.querySelectorAll('a')) {
-  if (link.pathname === path) link.setAttribute('aria-current', 'page');
+  if ((link.dataset.route ?? link.pathname) === path) link.setAttribute('aria-current', 'page');
 }
 if (path === '/admin') {
   void showAdmin();

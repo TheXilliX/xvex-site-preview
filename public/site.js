@@ -45,6 +45,9 @@ function home() {
     <a class="button" href="/download">Скачать</a></section>
     <div class="hero-product">
       ${homeScreenshot}
+      <figure class="hero-phone" aria-label="Главная X.Vex на телефоне">
+        <div class="hero-phone-frame">${screenshot('mobile-home', 'Мобильная главная X.Vex с виджетами')}</div>
+      </figure>
     </div>
     <ul class="home-principles">
       <li><h2>Файлы в твоей папке</h2><p>Открой любую папку как хранилище и работай с материалами на компьютере.</p></li>

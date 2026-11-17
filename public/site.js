@@ -11,7 +11,25 @@ const accountPath = validCode ? connectPath : '/account';
 
 menu.onclick = () => menu.setAttribute('aria-expanded', String(nav.classList.toggle('open')));
 
-const screenshot = (name, label) => `<div class="product app-screenshot ${name}-screenshot" role="img" aria-label="${label}"></div>`;
+const screenshot = (name, label) => `<button type="button" class="product app-screenshot ${name}-screenshot" data-preview="${name}" aria-label="Увеличить: ${label}"></button>`;
+document.addEventListener('click', event => {
+  const trigger = event.target instanceof Element && event.target.closest('[data-preview]');
+  if (!trigger) return;
+  const dark = document.documentElement.dataset.theme === 'dark';
+  const background = getComputedStyle(trigger, dark ? '::after' : null).backgroundImage;
+  const source = /^url\(["']?(.*?)["']?\)$/.exec(background)?.[1];
+  if (!source) return;
+  const dialog = document.createElement('dialog');
+  dialog.className = 'screenshot-lightbox';
+  dialog.setAttribute('aria-label', trigger.getAttribute('aria-label'));
+  const close = document.createElement('button');
+  close.type = 'button'; close.textContent = 'Закрыть'; close.onclick = () => dialog.close();
+  const image = document.createElement('img'); image.src = source; image.alt = trigger.getAttribute('aria-label');
+  dialog.append(close, image); document.body.append(dialog);
+  dialog.onclick = e => { if (e.target === dialog) dialog.close(); };
+  dialog.onclose = () => { dialog.remove(); trigger.focus({preventScroll:true}); };
+  dialog.showModal();
+});
 const homeScreenshot = screenshot('home', 'Главная X.Vex с виджетами');
 const dashboard = screenshot('dashboard', 'Главная X.Vex с задачами, календарём и избранным');
 const note = screenshot('note', 'Заметка со списком идей и задач для прогулки');

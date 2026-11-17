@@ -17,6 +17,7 @@ const note = screenshot('note', 'Заметка со списком идей и 
 const board = screenshot('board', 'Доска с рисунками и стрелками между остановками прогулки');
 const kanban = screenshot('kanban', 'Канбан с колонками «В процессе» и «Выполнены»');
 const communityUrl = 'https://t.me/XVexAPP';
+const supportUrl = 'https://t.me/XVex_Support';
 const releasesUrl = 'https://github.com/TheXilliX/xvex-updates/releases';
 
 function featureRows(rows) {
@@ -35,7 +36,7 @@ function home() {
   footer.innerHTML = `<a class="logo" href="/"><span class="brand-mark" aria-hidden="true"></span>X.Vex</a>
     <nav aria-label="Ссылки в подвале">
       <div><strong>Приложение</strong><a href="/sync">Синхронизация</a><a href="/download">Скачать</a></div>
-      <div><strong>Ресурсы</strong><a href="/help">Справка</a><a href="${releasesUrl}">История обновлений</a></div>
+      <div><strong>Ресурсы</strong><a href="/help">Справка</a><a href="${supportUrl}">Поддержка</a><a href="${releasesUrl}">История обновлений</a></div>
       <div><strong>Сообщество</strong><a href="${communityUrl}">Telegram</a></div>
     </nav>`;
   return `<section class="hero"><h1>Для идей, планов<br>и тараканов в голове.</h1>
@@ -75,6 +76,7 @@ function home() {
       <h2 id="community-title">Сообщество и помощь</h2>
       <div>
         <a href="${communityUrl}"><strong>Telegram</strong><span>Новости X.Vex и связь с сообществом.</span></a>
+        <a href="${supportUrl}"><strong>Поддержка</strong><span>Вопросы и сообщения об ошибках в Telegram.</span></a>
         <a href="/help"><strong>Справка</strong><span>Установка, обновления и вход в приложение.</span></a>
         <a href="${releasesUrl}"><strong>История обновлений</strong><span>Версии и изменения приложения.</span></a>
       </div>
@@ -161,7 +163,7 @@ function help() {
     </details>
     <details><summary>Как работает синхронизация?</summary><p>X.Vex хранит материалы локально. Участники тестирования могут отправлять и получать материалы в настройках синхронизации.</p></details>
     <details><summary>Как войти в приложении?</summary><p>Открой «Настройки → Аккаунт», войди в браузере и подтверди код, который показан в X.Vex.</p></details>
-    <div class="help-links"><a href="https://t.me/XVexAPP">Сообщество X.Vex в Telegram</a></div>
+    <div class="help-links"><a href="${supportUrl}">Написать в поддержку X.Vex</a><a href="${communityUrl}">Сообщество X.Vex в Telegram</a></div>
   </section>`;
 }
 

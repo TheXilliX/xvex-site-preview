@@ -136,7 +136,7 @@ p{line-height:1.55}
 .sync-details p{color:var(--muted)}
 .sync-details p:last-child{margin-bottom:0}
 .home-download h2{margin-bottom:20px}
-.home-community>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:20px;text-align:start}
+.home-community>div{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-top:20px;text-align:start}
 .home-community a{display:grid;align-content:start;gap:6px;padding:18px;border:1px solid var(--line);border-radius:12px;color:var(--text);text-decoration:none}
 .home-community a:hover{border-color:var(--accent);color:var(--accent)}
 .home-example .feature-list{margin:0 0 28px;text-align:start}

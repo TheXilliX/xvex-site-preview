@@ -231,3 +231,16 @@ input{width:100%;padding:11px 12px;min-height:44px;border-radius:7px;border:1px 
 }
 
 .home-screenshot{--light-shot:url("/assets/home-light.png");--dark-shot:url("/assets/home-dark.png")}
+.app-screenshot,.app-screenshot::after{background-size:100% 100%;background-position:center;transform:none;filter:none}
+.app-screenshot{isolation:isolate;contain:paint;transition:none}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+@media(max-width:820px){
+  .app-screenshot{aspect-ratio:9/20;width:min(100%,360px);justify-self:center;margin-inline:auto;flex:none}
+  .home-screenshot{--light-shot:url('/assets/mobile-home-light.jpg');--dark-shot:url('/assets/mobile-home-dark.jpg')}
+  .dashboard-screenshot{--light-shot:url('/assets/mobile-dashboard-light.jpg');--dark-shot:url('/assets/mobile-dashboard-dark.jpg')}
+  .note-screenshot{--light-shot:url('/assets/mobile-note-light.jpg');--dark-shot:url('/assets/mobile-note-dark.jpg')}
+  .board-screenshot{--light-shot:url('/assets/mobile-board-light.jpg');--dark-shot:url('/assets/mobile-board-dark.jpg')}
+  .kanban-screenshot{--light-shot:url('/assets/mobile-kanban-light.jpg');--dark-shot:url('/assets/mobile-kanban-dark.jpg')}
+  .feature,.feature:nth-child(even){display:flex;flex-direction:column;align-items:stretch;gap:16px}
+  .feature .app-screenshot{align-self:center;order:2}
+}

@@ -21,10 +21,15 @@ const communityUrl = 'https://t.me/XVexAPP';
 const supportUrl = 'https://t.me/XVex_Support';
 const releasesUrl = 'https://github.com/TheXilliX/xvex-updates/releases';
 
-function featureRows(rows) {
-  return `<div class="feature-list">${rows.map(([title, description, preview]) => `<section class="feature">
-    <div><h3>${title}</h3><p>${description}</p></div>${preview}
-  </section>`).join('')}</div>`;
+const tools = {
+  note: ['Заметки', 'Записывай мысли и материалы для проектов. Используй заголовки, списки и чекбоксы, чтобы структурировать записи.', note],
+  board: ['Доски', 'Раскладывай идеи на свободном холсте. Добавляй картинки, рисуй и связывай элементы стрелками.', board],
+  kanban: ['Канбан', 'Видишь следующий шаг — легче начать. Собери задачи в карточки и перемещай их от планов к результату.', kanban],
+  dashboard: ['Виджеты', 'Добавь на главную заметки, колонки канбана и быстрый доступ к материалам. Расставь виджеты и выбери размер каждого под свой рабочий день.', dashboard],
+};
+function toolPreview(name) {
+  const [title, description, preview] = tools[name];
+  return `${preview}<div class="tool-description"><h3>${title}</h3><p>${description}</p></div>`;
 }
 
 function intro(title, description) {
@@ -56,13 +61,7 @@ function home() {
     </ul>
     <section class="home-example" aria-labelledby="tools-title">
       <span class="eyebrow">От первой мысли до готового дела</span><h2 id="tools-title">Дай идеям форму.</h2><p class="section-lead">Запиши мысль, разложи её на доске и преврати в конкретные шаги.</p>
-      <div class="tool-tabs" role="group" aria-label="Выбрать инструмент"><button type="button" data-tool="note" aria-pressed="true">Заметки</button><button type="button" data-tool="board" aria-pressed="false">Доски</button><button type="button" data-tool="kanban" aria-pressed="false">Канбан</button><button type="button" data-tool="dashboard" aria-pressed="false">Виджеты</button></div><div id="tool-preview">${note}</div>
-      ${featureRows([
-        ['Заметки', 'Записывай мысли и материалы для проектов. Используй заголовки, списки и чекбоксы, чтобы структурировать записи.', note],
-        ['Доски', 'Раскладывай идеи на свободном холсте. Добавляй картинки, рисуй и связывай элементы стрелками.', board],
-        ['Канбан', 'Видишь следующий шаг — легче начать. Собери задачи в карточки и перемещай их от планов к результату.', kanban],
-        ['Виджеты', 'Добавь на главную заметки, колонки канбана и быстрый доступ к материалам. Расставь виджеты и выбери размер каждого под свой рабочий день.', dashboard],
-      ])}
+      <div class="tool-tabs" role="group" aria-label="Выбрать инструмент"><button type="button" data-tool="note" aria-pressed="true">Заметки</button><button type="button" data-tool="board" aria-pressed="false">Доски</button><button type="button" data-tool="kanban" aria-pressed="false">Канбан</button><button type="button" data-tool="dashboard" aria-pressed="false">Виджеты</button></div><div id="tool-preview">${toolPreview('note')}</div>
     </section>
     <section class="home-sync" aria-labelledby="sync-title">
       <h2 id="sync-title">Синхронизация между устройствами</h2>
@@ -85,10 +84,10 @@ function home() {
 }
 
 function sync() {
-  return intro('Твои идеи. На твоих устройствах.', 'Заметки, доски и задачи — в одном рабочем потоке.') + `<section class="sync-gallery"><div class="tool-tabs" role="group" aria-label="Материалы в хранилище"><button type="button" data-tool="note" aria-pressed="true">Заметки</button><button type="button" data-tool="board" aria-pressed="false">Доски</button><button type="button" data-tool="kanban" aria-pressed="false">Задачи</button></div><div id="tool-preview">${note}</div></section><div class="sync-details narrow">
+  return `<header class="page-intro"><h1>Твои идеи. На твоих устройствах.</h1></header><div class="sync-details narrow">
     <section>
       <h2>Одно хранилище на нескольких устройствах</h2>
-      <p>Войдите в один аккаунт на обоих устройствах. В «Настройки → Синхронизация» укажите одинаковое имя облачного хранилища.</p>
+      <p>Войдите в один аккаунт на всех устройствах. В «Настройки → Синхронизация» укажите одинаковое имя облачного хранилища.</p>
       <p>Сначала синхронизируйте устройство с материалами. На втором устройстве выберите пустое локальное хранилище и нажмите «Синхронизировать».</p>
       <p>Заметки, доски, Kanban и папки сохраняются локально. Обмен отдельными файлами вложений и настройками хранилища пока недоступен.</p>
       <a href="/account">Проверить доступ в аккаунте</a>
@@ -369,8 +368,9 @@ function showAccount() {
     return;
   }
   const switchPath = registration ? '/login' : '/register';
-  main.innerHTML = `<section class="account-box"><h1${registration ? ' class="register-title"' : ''}>${registration ? 'Создать аккаунт' : 'Войти в X.Vex'}</h1>
-    <p class="muted">Локальный предпросмотр. Используй тестовый адрес и отдельный пароль.</p>
+  main.classList.add('auth-page');
+  main.innerHTML = `<section class="account-box auth-card"><header class="auth-heading"><span class="auth-symbol brand-mark" aria-hidden="true"></span><span class="eyebrow">Аккаунт X.Vex</span><h1>${registration ? 'Создай своё пространство' : 'С возвращением.'}</h1>
+    <p class="muted">${registration ? 'Один аккаунт для твоих устройств.' : 'Войди в аккаунт, чтобы продолжить работу с X.Vex.'}</p></header>
     <form>
       <label>Электронная почта<input type="email" name="email" autocomplete="email" required maxlength="254"></label>
       ${passwordField('password', 'Пароль', registration ? 'new-password' : 'current-password', registration ? 'Минимум 8 символов' : '')}
@@ -378,7 +378,7 @@ function showAccount() {
       ${registration ? '' : '<a class="password-recovery" href="/forgot-password">Забыли пароль?</a>'}
       <button class="button" type="submit">${registration ? 'Зарегистрироваться' : 'Войти'}</button>
     </form><p role="status"></p>
-    <p>${registration ? 'Уже есть аккаунт?' : 'Нет аккаунта?'} <a href="${switchPath + (validCode ? '?code=' + code : '')}">${registration ? 'Войти' : 'Зарегистрироваться'}</a></p></section>`;
+    <p class="auth-alternative">${registration ? 'Уже есть аккаунт?' : 'Нет аккаунта?'} <a href="${switchPath + (validCode ? '?code=' + code : '')}">${registration ? 'Войти' : 'Создать аккаунт'}</a></p>${location.hostname.endsWith('.github.io') ? '<p class="auth-availability">Сервис аккаунтов пока не подключён.</p>' : ''}</section>`;
   const form = main.querySelector('form');
   bindPasswordToggles(form);
   form.onsubmit = event => {
@@ -472,7 +472,7 @@ if (pages[path]) {
   main.innerHTML = pages[path]();
   for (const button of main.querySelectorAll('[data-tool]')) button.onclick = () => {
     main.querySelectorAll('[data-tool]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
-    document.querySelector('#tool-preview').innerHTML = ({note, board, kanban, dashboard})[button.dataset.tool];
+    document.querySelector('#tool-preview').innerHTML = toolPreview(button.dataset.tool);
   };
   if (path === '/' && location.hash === '#tools-title') document.querySelector('#tools-title').scrollIntoView();
   if (path === '/download') {

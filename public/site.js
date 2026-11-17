@@ -29,7 +29,7 @@ const tools = {
 };
 function toolPreview(name) {
   const [title, description, preview] = tools[name];
-  return `${preview}<div class="tool-description"><h3>${title}</h3><p>${description}</p></div>`;
+  return `<div class="tool-image">${preview}</div><div class="tool-description"><h3>${title}</h3><p>${description}</p></div>`;
 }
 
 function intro(title, description) {
@@ -369,8 +369,8 @@ function showAccount() {
   }
   const switchPath = registration ? '/login' : '/register';
   main.classList.add('auth-page');
-  main.innerHTML = `<section class="account-box auth-card"><header class="auth-heading"><span class="auth-symbol brand-mark" aria-hidden="true"></span><span class="eyebrow">Аккаунт X.Vex</span><h1>${registration ? 'Создай своё пространство' : 'С возвращением.'}</h1>
-    <p class="muted">${registration ? 'Один аккаунт для твоих устройств.' : 'Войди в аккаунт, чтобы продолжить работу с X.Vex.'}</p></header>
+  main.innerHTML = `<section class="account-box auth-card"><header class="auth-heading"><span class="auth-symbol brand-mark" aria-hidden="true"></span><h1>${registration ? 'Создай своё пространство' : 'С возвращением.'}</h1>
+    <p class="muted">${registration ? 'Один аккаунт для твоих устройств.' : 'Продолжи работу в X.Vex.'}</p></header>
     <form>
       <label>Электронная почта<input type="email" name="email" autocomplete="email" required maxlength="254"></label>
       ${passwordField('password', 'Пароль', registration ? 'new-password' : 'current-password', registration ? 'Минимум 8 символов' : '')}

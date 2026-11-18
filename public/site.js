@@ -201,6 +201,24 @@ function syncExpiration(entry) {
   }).format(entry.syncExpiresAt);
 }
 
+function durationFields() {
+  return `<div class="duration-fields"><label class="forever-control"><span>Навсегда</span><input type="checkbox" role="switch" name="forever" aria-label="Бессрочный доступ"></label><div class="duration-inputs"><label>Срок доступа<input name="amount" type="number" min="1" max="365" value="30" step="1" required></label><label>Единица<select name="unit"><option value="days">Дни · 1–365</option><option value="hours">Часы · 1–24</option></select></label></div></div>`;
+}
+function bindDuration(form) {
+  const update = () => {
+    const forever = form.elements.forever.checked;
+    form.elements.amount.disabled = forever;
+    form.elements.unit.disabled = forever;
+    form.elements.amount.max = form.elements.unit.value === 'hours' ? 24 : 365;
+    if (+form.elements.amount.value > +form.elements.amount.max) form.elements.amount.value = form.elements.amount.max;
+  };
+  form.elements.forever.onchange = update;
+  form.elements.unit.onchange = update;
+  form.addEventListener('reset', () => setTimeout(update));
+  update();
+}
+const durationBody = form => ({ forever:form.elements.forever.checked, amount:Number(form.elements.amount.value), unit:form.elements.unit.value });
+
 function showProfile() {
   main.classList.add('profile-page');
   main.innerHTML = `<section class="account-box profile-box">
@@ -218,12 +236,22 @@ function showProfile() {
       <header><h2>X.Vex Sync</h2><span class="profile-badge${hasSyncAccess(account) ? ' is-active' : ''}">${hasSyncAccess(account) ? 'Доступ открыт' : 'Не подключено'}</span></header>
       <p class="profile-sync-summary">${hasSyncAccess(account) ? 'Доступ выдан администратором · ' + syncExpiration(account) : 'Доступ включается отдельно'}</p>
       <p class="profile-detail">${hasSyncAccess(account) ? 'Войди в этот аккаунт в приложении и открой настройки синхронизации.' : 'Аккаунт уже работает. Когда перейдём к синхронизации, администратор сможет открыть доступ к Sync.'}</p>
+      <form class="promo-redeem"><label>Есть промокод?<input name="code" placeholder="Введи промокод" maxlength="40" required autocomplete="off"></label><button class="button secondary" type="submit">Активировать</button><p role="status"></p></form>
       <a class="profile-text-link" href="/sync">О синхронизации <span aria-hidden="true">↗</span></a>
     </section></div>
     ${account.admin ? '<a class="profile-admin-link" href="/admin">Открыть админ-панель <span aria-hidden="true">→</span></a>' : ''}
   </section>`;
   main.querySelector('#account-email').textContent = email;
   main.querySelector('.profile-avatar').textContent = email.slice(0, 1).toLocaleUpperCase();
+  const promoForm = main.querySelector('.promo-redeem');
+  promoForm.onsubmit = event => {
+    event.preventDefault();
+    void run(event.submitter, async () => {
+      Object.assign(account, await api('promo/redeem', { code:promoForm.elements.code.value }));
+      showProfile();
+      main.querySelector('.profile-status').textContent = 'Промокод активирован. Доступ к Sync открыт.';
+    }, promoForm.querySelector('[role=status]'));
+  };
   const confirm = main.querySelector('#confirm-email');
   if (confirm) confirm.onclick = () => run(confirm, async () => {
     await api('email/request', {});
@@ -237,33 +265,24 @@ function showProfile() {
 }
 
 async function showAdmin() {
-  main.innerHTML = intro('Админ-панель', 'Аккаунты и доступ к X.Vex Sync.');
+  main.classList.add('admin-page');
+  main.innerHTML = `<header class="admin-heading"><span class="profile-avatar" aria-hidden="true">✦</span><div><h1>Админ-панель</h1><p class="muted">Аккаунты, доступ к Sync и промокоды.</p></div></header>`;
   if (!account?.admin) {
     main.insertAdjacentHTML('beforeend', email
       ? '<p class="page-intro">Эта страница доступна администратору.</p>'
       : '<p class="page-intro"><a href="/login">Войти в аккаунт администратора</a></p>');
     return;
   }
-  main.insertAdjacentHTML('beforeend', `<section class="admin-accounts narrow">
+  main.insertAdjacentHTML('beforeend', `<section class="admin-accounts admin-card"><header><h2>Аккаунты</h2><p class="muted">Управляй доступом к синхронизации.</p></header>
     <label>Поиск по имени или почте<input type="search" id="admin-search"></label>
     <p role="status">Загружаем аккаунты…</p>
     <ul aria-label="Аккаунты"></ul>
-  </section>
+  </section><section class="admin-card admin-promos"><header><h2>Промокоды</h2><p class="muted">Срок начинается с активации. Один аккаунт может применить каждый код один раз.</p></header><form id="promo-create"><div class="promo-basics"><label>Промокод<input name="code" placeholder="Например, XVEX-START" minlength="4" maxlength="40" pattern="[A-Za-z0-9][A-Za-z0-9_-]{3,39}" required autocomplete="off"></label><label>Число активаций<input name="maxUses" type="number" min="1" max="100000" step="1" value="1" required></label></div>${durationFields()}<button class="button" type="submit">Создать промокод</button><p role="status"></p></form><ul class="promo-list" aria-label="Промокоды"></ul></section>
   <dialog class="sync-grant-dialog" aria-labelledby="sync-grant-title">
     <form>
       <h2 id="sync-grant-title">Выдать доступ к Sync</h2>
       <p class="muted" data-grant-email></p>
-      <label>Срок доступа
-        <select name="days" autofocus>
-          <option value="1">1 день</option>
-          <option value="7">7 дней</option>
-          <option value="30">30 дней</option>
-          <option value="90">90 дней</option>
-          <option value="180">180 дней</option>
-          <option value="365">365 дней</option>
-          <option value="forever">Навсегда</option>
-        </select>
-      </label>
+      ${durationFields()}
       <p role="status"></p>
       <div class="profile-actions">
         <button class="button secondary" type="button" data-grant-cancel>Отмена</button>
@@ -275,6 +294,34 @@ async function showAdmin() {
   const status = main.querySelector('.admin-accounts [role=status]');
   const dialog = main.querySelector('.sync-grant-dialog');
   const grantForm = dialog.querySelector('form');
+  bindDuration(grantForm);
+  const promoCreate = main.querySelector('#promo-create');
+  bindDuration(promoCreate);
+  const promoStatus = promoCreate.querySelector('[role=status]');
+  const loadPromos = async () => {
+    const { promos } = await api('admin/promos');
+    const list = main.querySelector('.promo-list');
+    list.replaceChildren();
+    if (!promos.length) { list.innerHTML = '<li class="muted">Промокодов пока нет. Создай первый выше.</li>'; return; }
+    for (const promo of promos) {
+      const row = document.createElement('li');
+      row.innerHTML = '<div><strong></strong><span class="muted"></span></div><button class="button secondary" type="button">Отключить</button>';
+      row.querySelector('strong').textContent = promo.code;
+      row.querySelector('span').textContent = `${promo.duration_hours === null ? 'Навсегда' : promo.duration_hours % 24 === 0 ? promo.duration_hours / 24 + ' дн.' : promo.duration_hours + ' ч.'} · Активации: ${promo.uses} / ${promo.max_uses}${promo.disabled ? ' · Отключён' : ''}`;
+      const button = row.querySelector('button');
+      button.disabled = !!promo.disabled;
+      button.onclick = () => run(button, async () => { await api('admin/promos/disable',{ id:promo.id }); await loadPromos(); return 'Промокод отключён. Выданный доступ сохранён.'; },promoStatus);
+      list.append(row);
+    }
+  };
+  promoCreate.onsubmit = event => {
+    event.preventDefault();
+    void run(event.submitter, async () => {
+      await api('admin/promos',{ code:promoCreate.elements.code.value, maxUses:Number(promoCreate.elements.maxUses.value), ...durationBody(promoCreate) });
+      promoCreate.reset(); await loadPromos(); return 'Промокод создан.';
+    },promoStatus);
+  };
+  void loadPromos().catch(error => { promoStatus.textContent = error.message; });
   const grantStatus = dialog.querySelector('[role=status]');
   const cancelGrant = dialog.querySelector('[data-grant-cancel]');
   cancelGrant.onclick = () => dialog.close();
@@ -298,8 +345,8 @@ async function showAdmin() {
         button.textContent = enabled ? 'Отозвать доступ' : 'Выдать доступ';
         button.setAttribute('aria-label', `${button.textContent} — ${entry.email}`);
       };
-      const setAccess = async (enabled, days) => {
-        Object.assign(entry, await api('admin/sync', { accountId: entry.id, enabled, days }));
+      const setAccess = async (enabled, duration = {}) => {
+        Object.assign(entry, await api('admin/sync', { accountId: entry.id, enabled, ...duration }));
         paint();
       };
       button.onclick = () => {
@@ -314,11 +361,10 @@ async function showAdmin() {
         dialog.querySelector('[data-grant-email]').textContent = entry.email;
         grantForm.onsubmit = event => {
           event.preventDefault();
-          const value = grantForm.elements.days.value;
           void run(event.submitter, async () => {
             cancelGrant.disabled = true;
             try {
-              await setAccess(true, value === 'forever' ? null : Number(value));
+              await setAccess(true, durationBody(grantForm));
             } finally {
               cancelGrant.disabled = false;
             }
@@ -542,3 +588,4 @@ if (path === '/admin') {
   if (!accountLink.hasAttribute('aria-current')) accountLink.setAttribute('aria-current', 'true');
   showAccount();
 }
+

@@ -1,13 +1,15 @@
 const main = document.querySelector('#main');
-const path = location.pathname;
+const siteBase = location.hostname.endsWith('.github.io') ? '/xvex-site-preview' : '';
+let path = location.pathname.slice(siteBase.length) || '/';
 if (path === "/") document.body.classList.add("home-page");
 const menu = document.querySelector('.menu');
 const nav = document.querySelector('#nav');
 const accountLink = document.querySelector('#account-link');
-const code = new URLSearchParams(location.search).get('code') ?? '';
-const validCode = /^[A-F0-9]{10}$/.test(code);
-const connectPath = '/connect?code=' + encodeURIComponent(code);
-const accountPath = validCode ? connectPath : '/account';
+const defaultFooter = document.querySelector('.site-footer').innerHTML;
+let code = new URLSearchParams(location.search).get('code') ?? '';
+let validCode = /^[A-F0-9]{10}$/.test(code);
+let connectPath = '/connect?code=' + encodeURIComponent(code);
+let accountPath = validCode ? connectPath : '/account';
 
 menu.onclick = () => menu.setAttribute('aria-expanded', String(nav.classList.toggle('open')));
 
@@ -289,7 +291,7 @@ async function showAdmin() {
         <button class="button" type="submit">Выдать доступ</button>
       </div>
     </form>
-  </dialog>`);
+  </dialog><dialog class="sync-grant-dialog delete-account-dialog" aria-labelledby="delete-account-title"><form><h2 id="delete-account-title">Удалить аккаунт?</h2><p class="muted" data-delete-email></p><p class="delete-warning">Аккаунт, сеансы входа и облачные данные будут удалены без возможности восстановления. Локальные файлы на устройствах сохранятся.</p><label>Введи почту аккаунта для подтверждения<input name="email" type="email" required autocomplete="off"></label><p role="status"></p><div class="profile-actions"><button class="button secondary" type="button" data-delete-cancel>Отмена</button><button class="button danger-button" type="submit">Удалить аккаунт</button></div></form></dialog>`);
   const search = main.querySelector('#admin-search');
   const status = main.querySelector('.admin-accounts [role=status]');
   const dialog = main.querySelector('.sync-grant-dialog');
@@ -324,6 +326,11 @@ async function showAdmin() {
   void loadPromos().catch(error => { promoStatus.textContent = error.message; });
   const grantStatus = dialog.querySelector('[role=status]');
   const cancelGrant = dialog.querySelector('[data-grant-cancel]');
+  const deleteDialog = main.querySelector('.delete-account-dialog');
+  const deleteForm = deleteDialog.querySelector('form');
+  const deleteCancel = deleteDialog.querySelector('[data-delete-cancel]');
+  deleteCancel.onclick = () => deleteDialog.close();
+  deleteDialog.oncancel = event => { if (deleteCancel.disabled) event.preventDefault(); };
   cancelGrant.onclick = () => dialog.close();
   dialog.oncancel = event => {
     if (cancelGrant.disabled) event.preventDefault();
@@ -339,6 +346,36 @@ async function showAdmin() {
       if (entry.name) row.querySelector('.admin-email').textContent = entry.email;
       const access = row.querySelector('.admin-access');
       const button = row.querySelector('button');
+      const actions = document.createElement('div');
+      actions.className = 'admin-row-actions';
+      row.append(actions);
+      actions.append(button);
+      const remove = document.createElement('button');
+      remove.type = 'button'; remove.className = 'button secondary danger-button'; remove.textContent = 'Удалить';
+      remove.setAttribute('aria-label', 'Удалить аккаунт ' + entry.email);
+      actions.append(remove);
+      remove.onclick = () => {
+        deleteForm.reset();
+        deleteDialog.querySelector('[data-delete-email]').textContent = entry.email;
+        const deleteStatus = deleteForm.querySelector('[role=status]');
+        deleteStatus.textContent = '';
+        deleteForm.onsubmit = event => {
+          event.preventDefault();
+          void run(event.submitter, async () => {
+            deleteCancel.disabled = true;
+            let result;
+            try { result = await api('admin/accounts/delete', { accountId:entry.id,email:deleteForm.elements.email.value }); }
+            finally { deleteCancel.disabled = false; }
+            deleteDialog.close();
+            if (result.self) { location.replace('/login'); return; }
+            row.remove();
+            rows.splice(rows.findIndex(item=>item.row===row),1);
+            filter();
+            return 'Аккаунт удалён.';
+          },deleteStatus);
+        };
+        deleteDialog.showModal();
+      };
       const paint = () => {
         const enabled = hasSyncAccess(entry);
         access.textContent = (enabled ? 'Доступ к Sync · ' + syncExpiration(entry) : 'Без доступа к Sync') + (entry.admin ? ' · Администратор' : '');
@@ -521,6 +558,19 @@ const pages = { '/': home, '/sync': sync, '/download': download, '/help': help }
 const emailFlowTitles = { '/confirm-email': 'Подтвердить почту', '/forgot-password': 'Восстановить пароль', '/reset-password': 'Задать новый пароль' };
 const titles = { '/sync': 'Синхронизация', '/download': 'Скачать', '/help': 'Справка', '/account': 'Профиль', '/login': 'Войти', '/register': 'Создать аккаунт', '/connect': 'Вход в приложении' };
 titles['/admin'] = 'Админ-панель';
+async function renderRoute() {
+path = location.pathname.slice(siteBase.length).replace(/\/$/,'') || '/';
+code = new URLSearchParams(location.search).get('code') ?? '';
+validCode = /^[A-F0-9]{10}$/.test(code);
+connectPath = '/connect?code=' + encodeURIComponent(code);
+accountPath = validCode ? connectPath : '/account';
+main.className = 'wrap';
+document.body.classList.toggle('home-page',path==='/');
+if (path !== '/') {
+  const footer=document.querySelector('.site-footer');
+  footer.classList.remove('home-footer'); footer.innerHTML=defaultFooter;
+}
+document.querySelectorAll('#nav a,.header-admin,.header-account').forEach(link=>link.removeAttribute('aria-current'));
 const pageTitle = titles[path] ?? emailFlowTitles[path];
 document.title = pageTitle ? pageTitle + ' · X.Vex' : 'X.Vex';
 
@@ -557,7 +607,7 @@ if (pages[path]) {
     }
   }
 }
-try {
+if (!account) try {
   account = await api('account');
   email = account.email;
 } catch {}
@@ -581,11 +631,39 @@ for (const link of nav.querySelectorAll('a')) {
   if ((link.dataset.route ?? link.pathname) === path) link.setAttribute('aria-current', 'page');
 }
 if (path === '/admin') {
-  void showAdmin();
+  await showAdmin();
 } else if (emailFlowTitles[path]) {
   showEmailFlow();
 } else if (!pages[path]) {
   if (!accountLink.hasAttribute('aria-current')) accountLink.setAttribute('aria-current', 'true');
   showAccount();
 }
+}
+
+await renderRoute();
+let navigation = Promise.resolve();
+function navigate(url, pop = false) {
+  navigation = navigation.catch(()=>{}).then(async () => {
+    const update = async () => {
+      if (!pop) history.pushState(null,'',url);
+      menu.setAttribute('aria-expanded','false'); nav.classList.remove('open');
+      await renderRoute();
+      window.scrollTo({top:0,left:0,behavior:'instant'});
+      if (location.hash) document.getElementById(decodeURIComponent(location.hash.slice(1)))?.scrollIntoView();
+    };
+    if (document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      await document.startViewTransition(update).finished;
+    } else await update();
+  });
+}
+document.addEventListener('click',event=>{
+  const link=event.target.closest('a[href]');
+  if (!link || event.defaultPrevented || event.button!==0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || link.target || link.hasAttribute('download')) return;
+  const url=new URL(link.href);
+  if (url.origin!==location.origin || (url.pathname===location.pathname && url.search===location.search)) return;
+  const route=url.pathname.slice(siteBase.length).replace(/\/$/,'') || '/';
+  if (!(route in pages || route in titles || route in emailFlowTitles)) return;
+  event.preventDefault(); navigate(url.href);
+});
+window.addEventListener('popstate',()=>navigate(location.href,true));
 

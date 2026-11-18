@@ -481,3 +481,8 @@ html{scrollbar-gutter:stable}
 @media(prefers-reduced-motion:reduce){.forever-control input[role=switch],.forever-control input[role=switch]::before{transition:none}}
 .admin-page .admin-accounts li[hidden]{display:none}
 .forever-control input[role=switch]{min-height:26px;padding:0}
+.admin-page li>.admin-row-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.admin-page .danger-button{color:var(--error);border-color:color-mix(in srgb,var(--error) 45%,var(--line))}
+.admin-page .danger-button:hover{background:color-mix(in srgb,var(--error) 9%,var(--paper))}
+.delete-warning{font-size:14px;line-height:1.6;color:var(--muted)}
+@media(prefers-reduced-motion:no-preference){::view-transition-old(root){display:none}::view-transition-new(root){animation:none}}

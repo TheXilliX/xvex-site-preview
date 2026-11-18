@@ -398,3 +398,9 @@ main{padding-top:65px}
 }
 @media(max-width:360px){.tool-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){.tool-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));max-width:360px;margin-inline:auto}}
+/* Keep desktop previews distinct from the page without changing image proportions. */
+:root{--screenshot-edge:#a9abb0}
+:root[data-theme="dark"]{--screenshot-edge:#565b65}
+@media(min-width:821px){
+ .hero-product>.home-screenshot,#tool-preview .tool-image>.app-screenshot{box-shadow:0 0 0 1px var(--screenshot-edge)}
+}

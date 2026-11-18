@@ -202,30 +202,32 @@ function syncExpiration(entry) {
 }
 
 function showProfile() {
+  main.classList.add('profile-page');
   main.innerHTML = `<section class="account-box profile-box">
     <div class="profile-heading">
-      <div><h1>Профиль</h1><p class="muted">Управление аккаунтом X.Vex.</p></div>
+      <div class="profile-identity"><span class="profile-avatar" aria-hidden="true"></span><div><h1>Твой аккаунт</h1><p class="muted">Профиль и доступ к X.Vex.</p></div></div>
       <button class="button secondary" id="logout" type="button">Выйти</button>
     </div>
     <p class="profile-status" role="status"></p>
-    <section class="profile-card">
-      <h2>Личные данные</h2>
-      <p class="muted">Электронная почта</p><p id="account-email"></p>
-      <p class="muted">${account.emailConfirmed ? 'Почта подтверждена' : 'Почта ожидает подтверждения'}</p>
-      ${account.emailConfirmed ? '' : '<button class="button secondary" id="confirm-email" type="button">Получить ссылку подтверждения</button>'}
+    <div class="profile-grid"><section class="profile-card">
+      <header><h2>Личные данные</h2><span class="profile-badge${account.emailConfirmed ? ' is-active' : ''}">${account.emailConfirmed ? 'Почта подтверждена' : 'Нужно подтверждение'}</span></header>
+      <div class="profile-email-row"><span class="muted">Электронная почта</span><strong id="account-email"></strong></div>
+      ${account.emailConfirmed ? '<p class="profile-detail">Адрес подтверждён. Его можно использовать для восстановления доступа.</p>' : '<p class="profile-detail">Подтверди почту, чтобы можно было восстановить доступ к аккаунту.</p><button class="button secondary" id="confirm-email" type="button">Получить ссылку</button><p class="profile-local-help">В локальной версии письмо сохраняется на компьютере с сервером.</p>'}
     </section>
-    <section class="profile-card">
-      <h2>X.Vex Sync</h2>
-      <p>${hasSyncAccess(account) ? 'Доступ выдан администратором · ' + syncExpiration(account) : 'Нет действующего доступа'}</p>
-      <p class="muted">Войдите в этот аккаунт в приложении и откройте настройки синхронизации.</p>
-      <a href="/sync">О синхронизации</a>
-    </section>
+    <section class="profile-card profile-sync-card">
+      <header><h2>X.Vex Sync</h2><span class="profile-badge${hasSyncAccess(account) ? ' is-active' : ''}">${hasSyncAccess(account) ? 'Доступ открыт' : 'Не подключено'}</span></header>
+      <p class="profile-sync-summary">${hasSyncAccess(account) ? 'Доступ выдан администратором · ' + syncExpiration(account) : 'Доступ включается отдельно'}</p>
+      <p class="profile-detail">${hasSyncAccess(account) ? 'Войди в этот аккаунт в приложении и открой настройки синхронизации.' : 'Аккаунт уже работает. Когда перейдём к синхронизации, администратор сможет открыть доступ к Sync.'}</p>
+      <a class="profile-text-link" href="/sync">О синхронизации <span aria-hidden="true">↗</span></a>
+    </section></div>
+    ${account.admin ? '<a class="profile-admin-link" href="/admin">Открыть админ-панель <span aria-hidden="true">→</span></a>' : ''}
   </section>`;
   main.querySelector('#account-email').textContent = email;
+  main.querySelector('.profile-avatar').textContent = email.slice(0, 1).toLocaleUpperCase();
   const confirm = main.querySelector('#confirm-email');
   if (confirm) confirm.onclick = () => run(confirm, async () => {
     await api('email/request', {});
-    return 'Тестовое письмо сохранено в папке .data/mail.';
+    return 'Ссылка создана. Письмо сохранено в локальной папке писем сервера.';
   });
   const logout = main.querySelector('#logout');
   logout.onclick = () => run(logout, async () => {

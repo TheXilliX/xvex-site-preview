@@ -405,3 +405,30 @@ main{padding-top:65px}
  .hero-product>.home-screenshot,#tool-preview .tool-image>.app-screenshot{box-shadow:0 0 0 1px var(--screenshot-edge)}
 }
 .auth-card .local-account-link{display:block;text-align:center;margin-top:28px;font-size:16px;padding:14px}
+/* Account overview follows the compact sign-in design. */
+.profile-page{padding-block:54px 76px}
+.account-box.profile-box{width:min(900px,100%)}
+.profile-heading{align-items:center;margin-bottom:28px;gap:20px}
+.profile-identity{display:flex;align-items:center;gap:18px;min-width:0}
+.profile-avatar{display:grid;place-items:center;flex:none;width:64px;height:64px;border:1px solid var(--line);border-radius:20px;background:var(--selected-widget);color:var(--accent);font-size:27px;font-weight:700}
+.profile-box .profile-heading h1{font-size:36px;letter-spacing:-.035em;line-height:1.15;margin:0 0 8px}
+.profile-heading .muted{font-size:16px;line-height:1.5;margin:0}
+.profile-heading>.button{font-size:14px;min-height:40px;padding:9px 17px;border-color:var(--line);color:var(--muted);border-radius:10px}
+.profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.profile-grid .profile-card{margin:0;padding:26px;border-radius:20px;display:flex;flex-direction:column;align-items:start;min-width:0}
+.profile-card>header{display:flex;flex-direction:column;align-items:start;gap:12px;margin-bottom:25px}
+.profile-card h2{font-size:20px;margin:0;letter-spacing:-.02em}
+.profile-badge{display:inline-flex;align-items:center;gap:7px;padding:5px 9px;border-radius:7px;background:var(--canvas);border:1px solid var(--line);color:var(--muted);font-size:12px;line-height:1.4}
+.profile-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.profile-badge.is-active{background:var(--selected-widget);color:var(--accent);border-color:transparent}
+.profile-email-row{display:grid;gap:8px;width:100%;margin-bottom:16px}
+.profile-email-row>.muted{font-size:13px}
+.profile-email-row strong{font-size:18px;overflow-wrap:anywhere;font-weight:500}
+.profile-card .profile-detail{font-size:15px;line-height:1.65;color:var(--muted);margin:0 0 20px}
+.profile-card>.button{font-size:14px;padding:10px 15px;border-radius:10px;min-height:42px;max-width:100%;white-space:normal}
+.profile-card .profile-local-help{font-size:12px;line-height:1.5;color:var(--muted);margin:12px 0 0}
+.profile-card .profile-sync-summary{font-size:18px;line-height:1.45;font-weight:500;margin:0 0 14px}
+.profile-text-link{display:inline-flex;align-items:center;gap:10px;font-size:14px;text-decoration:none;margin-top:auto;padding-top:12px}
+.profile-admin-link{display:flex;justify-content:space-between;gap:12px;padding:18px 22px;margin-top:20px;border:1px solid var(--line);background:var(--paper);border-radius:14px;font-size:15px;text-decoration:none}
+.profile-box .profile-status:not(:empty){padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:var(--paper);margin:0 0 20px;font-size:14px;line-height:1.5}
+@media(max-width:820px){.profile-page{padding-block:30px 44px}.profile-grid{grid-template-columns:1fr;gap:16px}.profile-heading{gap:14px}.profile-identity{gap:12px}.profile-avatar{width:48px;height:48px;border-radius:15px;font-size:22px}.profile-box .profile-heading h1{font-size:28px}.profile-heading .muted{font-size:14px}.profile-grid .profile-card{padding:22px}.profile-card>header{flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:wrap;width:100%;margin-bottom:22px}.profile-heading>.button{margin-left:auto}.profile-badge{font-size:11px}}

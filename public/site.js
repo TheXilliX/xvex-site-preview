@@ -124,8 +124,8 @@ function bindSyncPricing() {
 
 function download() {
   return `<header class="download-hero"><span class="brand-mark" aria-hidden="true"></span><h1>X.Vex</h1><p>Твоё пространство для идей и дел.</p></header><div class="platforms narrow"><h2>Все платформы</h2>
-    <section class="platform"><div><strong>Windows</strong><small id="windows-version">Windows x64 · установщик</small></div><a id="windows-download" class="button" href="https://github.com/TheXilliX/xvex-updates/releases/download/v0.1.21/X.Vex_0.1.21_x64-setup.exe">Скачать для Windows</a></section>
-    <section class="platform"><div><strong>Android</strong><small>ARM64 · версия 0.1.21</small><div class="channels"><span>Google Play — не опубликовано</span><span>RuStore — не опубликовано</span></div></div><a id="android-download" class="button secondary" href="https://github.com/TheXilliX/xvex-updates/releases/download/v0.1.21/X.Vex-0.1.21-Android-arm64.apk">Скачать APK</a></section>
+    <section class="platform"><div><strong>Windows</strong><small id="windows-version">Windows x64 · установщик</small></div><a id="windows-download" class="button" href="https://github.com/TheXilliX/xvex-updates/releases/download/v0.1.23/X.Vex_0.1.23_x64-setup.exe">Скачать для Windows</a></section>
+    <section class="platform"><div><strong>Android</strong><small id="android-version">ARM64 · версия 0.1.23</small><div class="channels"><span>Google Play — не опубликовано</span><span>RuStore — не опубликовано</span></div></div><a id="android-download" class="button secondary" href="https://github.com/TheXilliX/xvex-updates/releases/download/v0.1.23/X.Vex-0.1.23-Android-arm64.apk">Скачать APK</a></section>
     <section class="platform"><div><strong>iPhone и iPad</strong><div class="channels">App Store</div></div><small>Скоро</small></section>
     <section class="platform"><div><strong>macOS</strong><div class="channels">Mac App Store</div></div><small>Скоро</small></section>
     <section class="platform"><div><strong>Linux</strong></div><small>Скоро</small></section>
@@ -639,7 +639,7 @@ if (pages[path]) {
       const windows = release.assets.find(asset => /_x64-setup\.exe$/.test(asset.name));
       const android = release.assets.find(asset => /Android-arm64\.apk$/.test(asset.name));
       if (windows) { document.querySelector('#windows-download').href = windows.browser_download_url; }
-      if (android) document.querySelector('#android-download').href = android.browser_download_url;
+      if (android) { document.querySelector('#android-download').href = android.browser_download_url; document.querySelector('#android-version').textContent = 'ARM64 · версия ' + release.tag_name.replace(/^v/,''); }
     }).catch(() => {});
     api('release').then(({ version }) => {
       document.querySelector('#windows-version').textContent = 'Windows x64 · версия ' + version;

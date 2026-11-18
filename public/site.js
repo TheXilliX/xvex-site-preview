@@ -512,9 +512,9 @@ function showAccount() {
   main.innerHTML = `<section class="account-box auth-card"><header class="auth-heading"><span class="auth-symbol brand-mark" aria-hidden="true"></span><h1>${registration ? 'Создай своё пространство' : 'С возвращением.'}</h1>
     <p class="muted">${registration ? 'Один аккаунт для твоих устройств.' : 'Продолжи работу в X.Vex.'}</p></header>
     <form>
-      ${registration?'<label>Имя<input name="name" required maxlength="80" autocomplete="username" placeholder="Например, The_XilliX"></label>':''}
+      ${registration?'<label>Имя<input name="name" required maxlength="80" autocomplete="username" placeholder="Ваше имя"></label>':''}
       <label>${registration?'Электронная почта':'Имя или электронная почта'}<input type="${registration?'email':'text'}" name="email" autocomplete="${registration?'email':'username'}" required maxlength="254"></label>
-      ${passwordField('password', 'Пароль', registration ? 'new-password' : 'current-password', registration ? 'Минимум 8 символов' : '')}
+      ${passwordField('password', 'Пароль', registration ? 'new-password' : 'current-password', '')}
       ${registration ? passwordField('repeat', 'Повторить пароль', 'new-password') : ''}
       ${registration ? '' : '<a class="password-recovery" href="/forgot-password">Забыли пароль?</a>'}
       <button class="button" type="submit">${registration ? 'Зарегистрироваться' : 'Войти'}</button>
@@ -561,7 +561,7 @@ function showEmailFlow() {
     ${confirming ? '<p class="muted">Подтверди адрес электронной почты, чтобы защитить доступ к аккаунту X.Vex.</p>' : ''}</header>
     ${requesting || hasLink ? `<form>
       ${requesting ? '<label>Электронная почта<input name="email" type="email" autocomplete="email" maxlength="254" required></label><p class="muted">Для подтверждённой почты тестовая ссылка появится в папке .data/mail.</p>'
-        : confirming ? '' : passwordField('password', 'Новый пароль', 'new-password', 'Минимум 8 символов') +
+        : confirming ? '' : passwordField('password', 'Новый пароль', 'new-password') +
           passwordField('repeat', 'Повторить пароль', 'new-password')}
       <button class="button" type="submit">${requesting ? 'Получить ссылку для сброса' : confirming ? 'Подтвердить почту' : 'Сохранить пароль'}</button>
     </form>` : '<p class="muted">Открой ссылку из письма целиком.</p>'}
@@ -717,6 +717,7 @@ document.addEventListener('click',event=>{
   event.preventDefault(); navigate(url.href);
 });
 window.addEventListener('popstate',()=>navigate(location.href,true));
+
 
 
 

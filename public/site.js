@@ -240,16 +240,16 @@ function showProfile() {
   main.classList.add('profile-page');
   const section = new URLSearchParams(location.search).get('section') || 'profile';
   const selected = ['profile','payments','sync'].includes(section) ? section : 'profile';
-  main.innerHTML = `<section class="account-workspace"><aside class="account-sidebar"><div class="account-sidebar-identity"><span class="profile-avatar" aria-hidden="true"></span><strong class="account-display-name"></strong></div><nav aria-label="Разделы аккаунта"><button data-section="profile">${accountIcon("user")}Профиль</button><button data-section="payments">${accountIcon("credit-card")}Оплата</button><button data-section="sync">${accountIcon("refresh-cw")}Синхронизация</button></nav><button id="logout" class="account-logout">${accountIcon("log-out")}Выйти</button></aside><div class="account-content"><p class="profile-status" role="status"></p><div id="account-section"></div></div></section><dialog class="sync-grant-dialog account-edit-dialog"><form></form></dialog>`;
-  main.querySelector('.account-display-name').textContent = account.name || email;
-  main.querySelector('.profile-avatar').textContent = (account.name || email).slice(0,1).toLocaleUpperCase();
+  main.innerHTML = `<section class="account-workspace"><aside class="account-sidebar"><nav aria-label="Разделы аккаунта"><button data-section="profile">${accountIcon("user")}Профиль</button><button data-section="payments">${accountIcon("credit-card")}Оплата</button><button data-section="sync">${accountIcon("refresh-cw")}Синхронизация</button></nav><button id="logout" class="account-logout">${accountIcon("log-out")}Выйти</button></aside><div class="account-content"><p class="profile-status" role="status"></p><div id="account-section"></div></div></section><dialog class="sync-grant-dialog account-edit-dialog"><form></form></dialog>`;
+
+
   const status=main.querySelector('.profile-status');
   main.querySelector('#logout').onclick = () => edit('signout');
   const dialog=main.querySelector('.account-edit-dialog');
   const form=dialog.querySelector('form');
   const edit = kind => {
     const title={signout:'Вы точно хотите выйти из аккаунта?',name:'Изменить имя',email:'Изменить почту',password:'Изменить пароль',logout:'Выйти на всех устройствах?',delete:'Удалить свой аккаунт?'}[kind];
-    form.innerHTML=`<h2 id="account-edit-title">${title}</h2>${kind==='name'?'<label>Имя<input name="name" required maxlength="80" autocomplete="username" placeholder="Латинские буквы, цифры, . - _ / :"></label>':''}${kind==='email'?'<label>Новая почта<input name="email" type="email" required maxlength="254" autocomplete="email"></label>':''}${kind==='delete'?'<p class="delete-warning">Аккаунт и облачные данные будут удалены навсегда. Локальные файлы сохранятся.</p><label>Введи свою почту для подтверждения<input name="email" type="email" required autocomplete="off"></label>':''}${kind==='logout'?'<p class="muted">Сеансы на сайте и во всех приложениях завершатся, включая этот.</p>':''}${kind!=='name'&&kind!=='signout'?passwordField('currentPassword','Текущий пароль','current-password'):''}${kind==='password'?passwordField('password','Новый пароль','new-password')+passwordField('repeat','Повторить новый пароль','new-password'):''}<p role="status"></p><div class="profile-actions"><button class="button secondary" type="button" data-cancel>Отмена</button><button class="button${kind==='delete'||kind==='signout'?' danger-button':''}" type="submit">${kind==='delete'?'Удалить аккаунт':kind==='logout'?'Выйти везде':kind==='signout'?'Выйти':'Сохранить'}</button></div>`;
+    form.innerHTML=`<h2 id="account-edit-title">${title}</h2>${kind==='name'?'<label>Имя<input name="name" required maxlength="80" autocomplete="username" placeholder="Латинские буквы, цифры, . - _ / :"></label>':''}${kind==='email'?'<label>Новая почта<input name="email" type="email" required maxlength="254" autocomplete="email"></label>':''}${kind==='delete'?'<p class="delete-warning">Аккаунт и облачные данные будут удалены навсегда. Локальные файлы сохранятся.</p><label>Введи свою почту для подтверждения<input name="email" type="email" required autocomplete="off"></label>':''}${kind==='logout'?'<p class="muted">Сеансы на сайте и во всех приложениях завершатся, включая этот.</p>':''}${kind!=='name'&&kind!=='signout'&&!(kind==='email'&&!account.emailConfirmed)?passwordField('currentPassword','Текущий пароль','current-password'):''}${kind==='password'?passwordField('password','Новый пароль','new-password')+passwordField('repeat','Повторить новый пароль','new-password'):''}<p role="status"></p><div class="profile-actions"><button class="button secondary" type="button" data-cancel>Отмена</button><button class="button${kind==='delete'||kind==='signout'?' danger-button':''}" type="submit">${kind==='delete'?'Удалить аккаунт':kind==='logout'?'Выйти везде':kind==='signout'?'Выйти':'Сохранить'}</button></div>`;
     dialog.setAttribute('aria-labelledby','account-edit-title');dialog.classList.toggle('signout-dialog',kind==='signout');
     if(kind==='name')form.elements.name.value=account.name || '';
     bindPasswordToggles(form);
@@ -264,11 +264,11 @@ function showProfile() {
         cancel.disabled=true;
         let result;
         try {result=await api(kind==='signout'?'logout':'account/'+({name:'profile',logout:'logout-all'}[kind]||kind),payload);} finally {cancel.disabled=false;}
-        if(kind==='signout'||kind==='logout'||kind==='delete'){location.replace('/login');return;}
+        if(kind==='signout'||kind==='logout'){location.replace('/login');return;}
         if(kind==='name')account.name=result.name;
-        if(kind==='email'){Object.assign(account,result);email=result.email;}
+        if(kind==='email'&&!result.pending){Object.assign(account,result);email=result.email;}
         dialog.close();showProfile();
-        main.querySelector('.profile-status').textContent=kind==='password'?'Пароль изменён. Остальные сеансы завершены.':kind==='email'?'Почта изменена. Подтверди новый адрес.':'Имя сохранено.';
+        main.querySelector('.profile-status').textContent=result.message||'Имя сохранено.';
       },form.querySelector('[role=status]'));
     };
     dialog.showModal();
@@ -282,7 +282,11 @@ function showProfile() {
       content.querySelector('#account-email').textContent=email;
       content.querySelectorAll('[data-edit]').forEach(button=>button.onclick=()=>edit(button.dataset.edit));
       const confirm=content.querySelector('#confirm-email');
-      if(confirm)confirm.onclick=()=>run(confirm,async()=>{await api('email/request',{});return 'Ссылка создана. Письмо сохранено в локальной папке писем сервера.';},status);
+      if(confirm)confirm.onclick=async()=>{
+        const caption=confirm.textContent;confirm.disabled=true;
+        try{await api('email/request',{});confirm.textContent='Ссылка создана';confirm.title='Письмо сохранено в локальной папке писем сервера';setTimeout(()=>{if(confirm.isConnected){confirm.textContent=caption;confirm.disabled=false;}},5000);}
+        catch(error){status.textContent=error.message;confirm.disabled=false;}
+      };
     }else if(tab==='payments'){
       content.innerHTML=`<header class="account-section-heading"><h1>Оплата</h1><p class="muted">Промокоды и доступ к сервисам.</p></header><section class="account-settings-card"><div class="account-setting-row"><div><h2>Способ оплаты</h2><p>Онлайн-оплата пока не подключена. Доступ можно получить по промокоду или у администратора.</p></div></div><div class="account-setting-row"><div><h2>Счета и возвраты</h2><p>Платежей и счетов пока нет.</p></div></div></section><section class="profile-card promo-history"><h2>История промокодов</h2><p class="muted" data-history-status>Загружаем историю…</p><ul></ul></section>`;
       const history=content.querySelector('.promo-history');
@@ -324,7 +328,7 @@ async function showAdmin() {
         <button class="button" type="submit">Выдать доступ</button>
       </div>
     </form>
-  </dialog><dialog class="sync-grant-dialog delete-account-dialog" aria-labelledby="delete-account-title"><form><h2 id="delete-account-title">Удалить аккаунт?</h2><p class="muted" data-delete-email></p><p class="delete-warning">Аккаунт, сеансы входа и облачные данные будут удалены без возможности восстановления. Локальные файлы на устройствах сохранятся.</p><label>Введи почту аккаунта для подтверждения<input name="email" type="email" required autocomplete="off"></label><p role="status"></p><div class="profile-actions"><button class="button secondary" type="button" data-delete-cancel>Отмена</button><button class="button danger-button" type="submit">Удалить аккаунт</button></div></form></dialog>`);
+  </dialog>`);
   main.querySelector('.admin-accounts').before(main.querySelector('.admin-promos'));
   const search = main.querySelector('#admin-search');
   const status = main.querySelector('.admin-accounts [role=status]');
@@ -376,11 +380,6 @@ async function showAdmin() {
   void loadPromos().catch(error => { promoStatus.textContent = error.message; });
   const grantStatus = dialog.querySelector('[role=status]');
   const cancelGrant = dialog.querySelector('[data-grant-cancel]');
-  const deleteDialog = main.querySelector('.delete-account-dialog');
-  const deleteForm = deleteDialog.querySelector('form');
-  const deleteCancel = deleteDialog.querySelector('[data-delete-cancel]');
-  deleteCancel.onclick = () => deleteDialog.close();
-  deleteDialog.oncancel = event => { if (deleteCancel.disabled) event.preventDefault(); };
   cancelGrant.onclick = () => dialog.close();
   dialog.oncancel = event => {
     if (cancelGrant.disabled) event.preventDefault();
@@ -400,32 +399,6 @@ async function showAdmin() {
       actions.className = 'admin-row-actions';
       row.append(actions);
       actions.append(button);
-      const remove = document.createElement('button');
-      remove.type = 'button'; remove.className = 'button secondary danger-button'; remove.textContent = 'Удалить';
-      remove.setAttribute('aria-label', 'Удалить аккаунт ' + entry.email);
-      actions.append(remove);
-      remove.onclick = () => {
-        deleteForm.reset();
-        deleteDialog.querySelector('[data-delete-email]').textContent = entry.email;
-        const deleteStatus = deleteForm.querySelector('[role=status]');
-        deleteStatus.textContent = '';
-        deleteForm.onsubmit = event => {
-          event.preventDefault();
-          void run(event.submitter, async () => {
-            deleteCancel.disabled = true;
-            let result;
-            try { result = await api('admin/accounts/delete', { accountId:entry.id,email:deleteForm.elements.email.value }); }
-            finally { deleteCancel.disabled = false; }
-            deleteDialog.close();
-            if (result.self) { location.replace('/login'); return; }
-            row.remove();
-            rows.splice(rows.findIndex(item=>item.row===row),1);
-            filter();
-            return 'Аккаунт удалён.';
-          },deleteStatus);
-        };
-        deleteDialog.showModal();
-      };
       const paint = () => {
         const enabled = hasSyncAccess(entry);
         access.textContent = (enabled ? 'Доступ к синхронизации · ' + syncExpiration(entry) : 'Без доступа к синхронизации') + (entry.admin ? ' · Администратор' : '');
@@ -437,10 +410,14 @@ async function showAdmin() {
         paint();
       };
       button.onclick = () => {
-        if (hasSyncAccess(entry)) return run(button, async () => {
-          await setAccess(false);
-          return 'Доступ отозван.';
-        }, status);
+        if(hasSyncAccess(entry)){
+          const modal=document.createElement('dialog');modal.className='sync-grant-dialog revoke-access-dialog';
+          modal.innerHTML='<form><h2>Отозвать доступ к синхронизации?</h2><div class="revoke-identity"><strong></strong><span class="muted"></span></div><p class="muted">Пользователь потеряет доступ к обмену с облаком. Локальные материалы сохранятся.</p><p role="status"></p><div class="profile-actions"><button type="button" class="button secondary">Отмена</button><button type="submit" class="button danger-button">Отозвать доступ</button></div></form>';
+          modal.querySelector('strong').textContent=entry.name||'Пользователь';modal.querySelector('.revoke-identity span').textContent=entry.email;
+          main.append(modal);const cancel=modal.querySelector('[type=button]');cancel.onclick=()=>modal.close();modal.onclose=()=>modal.remove();modal.oncancel=event=>{if(cancel.disabled)event.preventDefault();};
+          modal.querySelector('form').onsubmit=event=>{event.preventDefault();void run(event.submitter,async()=>{cancel.disabled=true;try{await setAccess(false);}finally{cancel.disabled=false;}modal.close();},modal.querySelector('[role=status]'));};
+          modal.showModal();return;
+        }
 
         grantForm.reset();
         grantStatus.textContent = '';
@@ -512,7 +489,7 @@ function showAccount() {
   main.innerHTML = `<section class="account-box auth-card"><header class="auth-heading"><span class="auth-symbol brand-mark" aria-hidden="true"></span><h1>${registration ? 'Создай своё пространство' : 'С возвращением.'}</h1>
     <p class="muted">${registration ? 'Один аккаунт для твоих устройств.' : 'Продолжи работу в X.Vex.'}</p></header>
     <form>
-      ${registration?'<label>Имя<input name="name" required maxlength="80" autocomplete="username" placeholder="Ваше имя"></label>':''}
+      ${registration?'<label>Имя / ник<input name="name" required maxlength="80" autocomplete="off"></label>':''}
       <label>${registration?'Электронная почта':'Имя или электронная почта'}<input type="${registration?'email':'text'}" name="email" autocomplete="${registration?'email':'username'}" required maxlength="254"></label>
       ${passwordField('password', 'Пароль', registration ? 'new-password' : 'current-password', '')}
       ${registration ? passwordField('repeat', 'Повторить пароль', 'new-password') : ''}
@@ -548,7 +525,18 @@ function bindPasswordToggles(form) {
   }
 }
 
+function showPendingAction() {
+  const kind=path==='/confirm-account-delete'?'delete':path==='/confirm-password-change'?'password':'email';
+  const token=location.hash.slice(1);if(location.hash)history.replaceState(null,'',siteBase+path);
+  const valid=/^[\w-]{43}$/.test(token);
+  const title=kind==='delete'?'Удалить аккаунт?':kind==='password'?'Подтвердить смену пароля':'Подтвердить новый адрес';
+  main.classList.add('auth-page');
+  main.innerHTML=`<section class="account-box auth-card email-flow-card"><header class="auth-heading"><span class="auth-symbol brand-mark" aria-hidden="true"></span><h1>${title}</h1><p class="muted">${kind==='delete'?'Аккаунт и облачные данные будут удалены навсегда. Локальные файлы на устройствах сохранятся.':kind==='password'?'После подтверждения будет установлен новый пароль и завершены все сеансы входа.':'Новый адрес станет почтой аккаунта после подтверждения. Все сеансы входа завершатся.'}</p></header>${valid?`<form><button class="button${kind==='delete'?' danger-button':''}" type="submit">${kind==='delete'?'Да, удалить аккаунт':'Подтвердить'}</button></form>`:'<p class="muted">Открой ссылку из письма целиком.</p>'}<p role="status"></p><a class="pending-cancel" href="/account">Отмена</a></section>`;
+  const form=main.querySelector('form');
+  if(form)form.onsubmit=event=>{event.preventDefault();void run(event.submitter,async()=>{await api('account/action/confirm',{token,kind});form.hidden=true;main.querySelector('.auth-heading h1').textContent=kind==='delete'?'Аккаунт удалён':'Изменение подтверждено';main.querySelector('.auth-heading p').textContent=kind==='delete'?'Удаление завершено.':'Войди заново с обновлёнными данными.';const link=main.querySelector('.pending-cancel');link.textContent='Перейти ко входу';link.href=siteBase+'/login';return '';});};
+}
 function showEmailFlow() {
+  if(['/confirm-email-change','/confirm-password-change','/confirm-account-delete'].includes(path)){showPendingAction();return;}
   const confirming = path === '/confirm-email';
   const requesting = path === '/forgot-password';
   const token = requesting ? '' : location.hash.slice(1);
@@ -607,6 +595,7 @@ async function run(button, action, status = main.querySelector('[role=status]'))
 
 const pages = { '/': home, '/sync': sync, '/download': download, '/help': help };
 const emailFlowTitles = { '/confirm-email': 'Подтвердить почту', '/forgot-password': 'Восстановить пароль', '/reset-password': 'Задать новый пароль' };
+Object.assign(emailFlowTitles,{'/confirm-email-change':'Подтвердить новый адрес','/confirm-password-change':'Подтвердить смену пароля','/confirm-account-delete':'Удалить аккаунт'});
 const titles = { '/sync': 'Синхронизация', '/download': 'Скачать', '/help': 'Справка', '/account': 'Профиль', '/login': 'Войти', '/register': 'Создать аккаунт', '/connect': 'Вход в приложении' };
 titles['/admin'] = 'Админ-панель';
 async function renderRoute() {
@@ -717,6 +706,7 @@ document.addEventListener('click',event=>{
   event.preventDefault(); navigate(url.href);
 });
 window.addEventListener('popstate',()=>navigate(location.href,true));
+
 
 
 

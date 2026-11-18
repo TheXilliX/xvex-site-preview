@@ -552,3 +552,9 @@ input:focus,.auth-card input:focus,.admin-page input:not([role=switch]):focus{ou
 .admin-page .unit-buttons button{width:100%;min-width:0;padding:9px 10px}
 .admin-page .unit-buttons::before{box-sizing:border-box;max-width:calc((100% - 8px)/2)}
 @media(max-width:600px){.admin-page .unit-buttons{min-width:0;padding:4px}.admin-page .unit-buttons button{padding:10px 4px}}
+.revoke-identity{display:grid;gap:6px;padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--canvas);overflow-wrap:anywhere}.revoke-access-dialog form{display:grid;gap:16px}.revoke-access-dialog h2{margin:0;font-size:24px}.revoke-access-dialog p{font-size:14px;line-height:1.6}.revoke-access-dialog .profile-actions{justify-content:space-between}
+.revoke-access-dialog .danger-button,.email-flow-card .danger-button{background:var(--error);border-color:var(--error);color:#fff}
+.account-sidebar nav{margin-top:0}.account-sidebar{min-height:360px}
+#confirm-email{min-width:152px}
+.pending-cancel{display:block;text-align:center;margin-top:22px;font-size:14px}
+@media(min-width:760px){.account-edit-dialog.signout-dialog{width:min(680px,calc(100% - 40px))}.signout-dialog h2{max-width:none;white-space:nowrap;font-size:24px}}

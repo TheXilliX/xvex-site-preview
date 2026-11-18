@@ -204,7 +204,7 @@ function syncExpiration(entry) {
 }
 
 function durationFields() {
-  return `<div class="duration-fields"><label class="forever-control"><span>Навсегда</span><input type="checkbox" role="switch" name="forever" aria-label="Бессрочный доступ"></label><div class="duration-inputs"><label>Срок доступа<input name="amount" type="number" min="1" max="365" value="30" step="1" required></label><label>Единица<select name="unit"><option value="days">Дни · 1–365</option><option value="hours">Часы · 1–24</option></select></label></div></div>`;
+  return `<div class="duration-fields"><label>Срок доступа<input name="amount" type="number" inputmode="numeric" min="1" max="365" placeholder="1–365" step="1" required></label><div class="duration-unit"><span>Единица</span><input name="unit" type="hidden" value="days"><div class="unit-buttons" role="group" aria-label="Единица срока"><button type="button" data-unit="days" aria-pressed="true">Дни</button><button type="button" data-unit="hours" aria-pressed="false">Часы</button></div></div><label class="forever-control"><span>Навсегда</span><input type="checkbox" role="switch" name="forever" aria-label="Бессрочный доступ"></label></div>`;
 }
 function bindDuration(form) {
   const update = () => {
@@ -212,10 +212,12 @@ function bindDuration(form) {
     form.elements.amount.disabled = forever;
     form.elements.unit.disabled = forever;
     form.elements.amount.max = form.elements.unit.value === 'hours' ? 24 : 365;
-    if (+form.elements.amount.value > +form.elements.amount.max) form.elements.amount.value = form.elements.amount.max;
+    form.elements.amount.placeholder = form.elements.unit.value === 'hours' ? '1–24' : '1–365';
+    form.querySelectorAll('[data-unit]').forEach(button=>{button.disabled=forever;button.setAttribute('aria-pressed',String(button.dataset.unit===form.elements.unit.value));});
   };
   form.elements.forever.onchange = update;
   form.elements.unit.onchange = update;
+  form.querySelectorAll('[data-unit]').forEach(button=>button.onclick=()=>{form.elements.unit.value=button.dataset.unit;update();});
   form.addEventListener('reset', () => setTimeout(update));
   update();
 }
@@ -310,6 +312,7 @@ async function showAdmin() {
       </div>
     </form>
   </dialog><dialog class="sync-grant-dialog delete-account-dialog" aria-labelledby="delete-account-title"><form><h2 id="delete-account-title">Удалить аккаунт?</h2><p class="muted" data-delete-email></p><p class="delete-warning">Аккаунт, сеансы входа и облачные данные будут удалены без возможности восстановления. Локальные файлы на устройствах сохранятся.</p><label>Введи почту аккаунта для подтверждения<input name="email" type="email" required autocomplete="off"></label><p role="status"></p><div class="profile-actions"><button class="button secondary" type="button" data-delete-cancel>Отмена</button><button class="button danger-button" type="submit">Удалить аккаунт</button></div></form></dialog>`);
+  main.querySelector('.admin-accounts').before(main.querySelector('.admin-promos'));
   const search = main.querySelector('#admin-search');
   const status = main.querySelector('.admin-accounts [role=status]');
   const dialog = main.querySelector('.sync-grant-dialog');
@@ -329,8 +332,19 @@ async function showAdmin() {
       row.querySelector('strong').textContent = promo.code;
       row.querySelector('span').textContent = `${promo.duration_hours === null ? 'Навсегда' : promo.duration_hours % 24 === 0 ? promo.duration_hours / 24 + ' дн.' : promo.duration_hours + ' ч.'} · Активации: ${promo.uses} / ${promo.max_uses}${promo.disabled ? ' · Отключён' : ''}`;
       const button = row.querySelector('button');
-      button.disabled = !!promo.disabled;
-      button.onclick = () => run(button, async () => { await api('admin/promos/disable',{ id:promo.id }); await loadPromos(); return 'Промокод отключён. Выданный доступ сохранён.'; },promoStatus);
+      const actions=document.createElement('div');actions.className='promo-actions';row.append(actions);actions.append(button);
+      button.textContent=promo.disabled?'Включить':'Отключить';
+      button.onclick = () => run(button, async () => { await api('admin/promos/state',{ id:promo.id,enabled:!!promo.disabled }); await loadPromos(); return promo.disabled?'Промокод включён.':'Промокод отключён. Выданный доступ сохранён.'; },promoStatus);
+      const remove=document.createElement('button');remove.type='button';remove.className='button secondary danger-button';remove.textContent='Удалить';actions.append(remove);
+      remove.onclick=()=>{
+        const modal=document.createElement('dialog');modal.className='sync-grant-dialog promo-delete-dialog';
+        modal.innerHTML='<form><h2>Удалить промокод?</h2><p class="muted"></p><p class="delete-warning">Код больше нельзя будет активировать. Уже выданный доступ и история активаций сохранятся.</p><p role="status"></p><div class="profile-actions"><button class="button secondary" type="button">Отмена</button><button class="button secondary danger-button" type="submit">Удалить</button></div></form>';
+        modal.querySelector('p').textContent=promo.code;main.append(modal);
+        const cancel=modal.querySelector('[type=button]');cancel.onclick=()=>modal.close();modal.onclose=()=>modal.remove();
+        modal.oncancel=event=>{if(cancel.disabled)event.preventDefault();};
+        modal.querySelector('form').onsubmit=event=>{event.preventDefault();void run(event.submitter,async()=>{cancel.disabled=true;try{await api('admin/promos/delete',{id:promo.id});}finally{cancel.disabled=false;}modal.close();await loadPromos();promoStatus.textContent='Промокод удалён.';},modal.querySelector('[role=status]'));};
+        modal.showModal();
+      };
       list.append(row);
     }
   };
@@ -356,7 +370,7 @@ async function showAdmin() {
   try {
     const { accounts } = await api('admin/accounts');
     const list = main.querySelector('.admin-accounts ul');
-    const rows = accounts.map(entry => {
+    const rows = accounts.sort((a,b)=>Number(b.admin)-Number(a.admin)).map(entry => {
       const row = document.createElement('li');
       row.innerHTML = `<div><strong></strong><span class="muted admin-email"></span><span class="muted admin-access"></span></div>
         <button class="button secondary" type="button"></button>`;

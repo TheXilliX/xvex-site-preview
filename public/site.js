@@ -327,8 +327,11 @@ async function loadCloudPanel(host){
   const percent=Math.min(100,Math.round(storage.usedBytes/storage.quotaBytes*100));
   host.innerHTML='<header><h2>Облачное хранилище</h2><button class="cloud-refresh" aria-label="Обновить объём">↻</button></header><div class="cloud-usage-numbers"><strong></strong><span></span></div><progress aria-label="Занято места в облаке"></progress><p class="cloud-usage-status muted"></p><div class="cloud-vaults"></div><details><summary>Что входит в объём</summary><p class="muted">Фактический размер заметок, досок, канбана, папок и значков. Вложения пока не передаются. Фотографии на досках — до 5 МБ каждая.</p></details>';
   host.querySelector('.cloud-refresh').onclick=()=>void loadCloudPanel(host);
-  host.querySelector('strong').textContent=cloudBytes(storage.usedBytes)+' / '+cloudBytes(storage.quotaBytes);
-  host.querySelector('.cloud-usage-numbers>span').textContent=percent+'% занято · свободно '+cloudBytes(storage.availableBytes);
+  host.querySelector('strong').textContent=cloudBytes(storage.usedBytes)+' ';
+  const quota=document.createElement('small');quota.textContent='/ '+cloudBytes(storage.quotaBytes);host.querySelector('strong').append(quota);
+  const badge=document.createElement('span');badge.className='cloud-percent-badge'+(storage.nearLimit?' is-warning':'');badge.textContent=percent+'% занято';host.querySelector('header').insertBefore(badge,host.querySelector('.cloud-refresh'));
+  host.querySelector('h2').insertAdjacentHTML('afterbegin','<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 18a5 5 0 1 1 0-10 6 6 0 0 1 11.7 1.8A4.2 4.2 0 0 1 18 18Z"/></svg>');
+  host.querySelector('.cloud-usage-numbers>span').textContent='Свободно '+cloudBytes(storage.availableBytes);
   const progress=host.querySelector('progress');progress.max=storage.quotaBytes;progress.value=Math.min(storage.usedBytes,storage.quotaBytes);
   const notices=[];if(storage.nearLimit)notices.push(storage.full?'Облако заполнено. Новые изменения сохраняются на устройстве. Освободи место для отправки в облако.':'Место почти закончилось. Если облако заполнится, изменения продолжат сохраняться локально.');
   if(storage.expiresAt!==null&&storage.expiresAt-Date.now()<=7*86400000)notices.push(storage.expiresAt<=Date.now()?'Доступ к синхронизации закончился. Локальные материалы сохранены.':'Доступ к синхронизации заканчивается через '+Math.ceil((storage.expiresAt-Date.now())/86400000)+' дн.');

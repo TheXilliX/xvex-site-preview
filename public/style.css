@@ -404,3 +404,4 @@ main{padding-top:65px}
 @media(min-width:821px){
  .hero-product>.home-screenshot,#tool-preview .tool-image>.app-screenshot{box-shadow:0 0 0 1px var(--screenshot-edge)}
 }
+.auth-card .local-account-link{display:block;text-align:center;margin-top:28px;font-size:16px;padding:14px}

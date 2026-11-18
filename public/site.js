@@ -351,6 +351,11 @@ async function showAdmin() {
 
 function showAccount() {
   const registration = path === '/register';
+  if (location.hostname.endsWith('.github.io')) {
+    main.classList.add('auth-page');
+    main.innerHTML = `<section class="account-box auth-card"><header class="auth-heading"><span class="auth-symbol brand-mark" aria-hidden="true"></span><h1>Аккаунт на твоём ПК</h1><p class="muted">Сервер аккаунтов временно работает на твоём компьютере.</p></header><a class="button local-account-link" href="http://127.0.0.1:4179/${registration ? 'register' : 'login'}${validCode ? '?code=' + code : ''}">${registration ? 'Открыть регистрацию' : 'Открыть вход'}</a><p class="auth-availability">Открывай эту ссылку на ПК, где запущен сервер X.Vex. На телефоне входи через приложение.</p></section>`;
+    return;
+  }
   if (path === '/connect' && !validCode) {
     main.innerHTML = '<section class="account-box"><h1>Вход в X.Vex</h1><p>Откройте ссылку для входа из приложения.</p></section>';
     return;

@@ -283,6 +283,7 @@ body{font-size:18px}
 .site-header nav a[aria-current],.header-account[aria-current]{border-color:var(--line);background:var(--panel);color:var(--text)}
 .logo:hover,.site-header .logo:hover,.home-page .logo:hover{color:var(--accent)}
 .header-account:hover{color:var(--accent);background:var(--panel)}
+.header-account[data-pending]{visibility:hidden}
 .theme-toggle{flex-shrink:0}
 main{padding-top:65px}
 .hero{max-width:1080px;margin-bottom:48px}

@@ -524,6 +524,7 @@ if (email) {
     if (path === '/admin') adminLink.setAttribute('aria-current', 'page');
   }
 }
+accountLink.removeAttribute('data-pending');
 for (const link of nav.querySelectorAll('a')) {
   if ((link.dataset.route ?? link.pathname) === path) link.setAttribute('aria-current', 'page');
 }

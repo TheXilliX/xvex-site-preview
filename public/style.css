@@ -378,11 +378,14 @@ main{padding-top:65px}
  .auth-page{padding-block:30px 44px}.account-box.auth-card{padding:28px 22px;border-radius:20px}.auth-card .auth-heading h1{font-size:30px}
  .auth-card .auth-heading p{font-size:15px}.auth-card form{margin-top:24px;gap:18px}
 }
-/* Use one image layer: overlapping rounded layers exposed the light image at dark corners. */
+/* Crossfade inside one rounded clip so the light layer cannot leak at the corners. */
 :root{--phone-shell:#17191c}
 :root[data-theme="dark"]{--phone-shell:#f4f3ef}
-.app-screenshot::after{display:none}
-:root[data-theme="dark"] .app-screenshot{background-image:var(--dark-shot)}
+.app-screenshot::after{display:block;border-radius:0;pointer-events:none}
+:root[data-theme="dark"] .app-screenshot{background-image:var(--light-shot)}
+@media(prefers-reduced-motion:no-preference){
+ .hero-phone-frame,.tool-image{transition:background-color .22s ease}
+}
 .hero-phone-frame{padding:5px;border:0;border-radius:28px;background:var(--phone-shell)}
 .hero-phone .app-screenshot{aspect-ratio:6/13;border-radius:23px;background-size:100% 100%;background-position:center}
 #tool-preview{border:0;background:transparent;overflow:visible;border-radius:0}

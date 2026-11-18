@@ -515,6 +515,7 @@ try {
   account = await api('account');
   email = account.email;
 } catch {}
+try { sessionStorage.setItem('xvex-header-session', JSON.stringify({ signedIn:!!email, admin:!!account?.admin })); } catch {}
 if (email) {
   accountLink.textContent = 'Профиль';
   accountLink.href = '/account';
@@ -523,6 +524,11 @@ if (email) {
     adminLink.hidden = false;
     if (path === '/admin') adminLink.setAttribute('aria-current', 'page');
   }
+}
+else {
+  accountLink.textContent = 'Аккаунт';
+  accountLink.href = '/login';
+  document.querySelector('.header-admin').hidden = true;
 }
 accountLink.removeAttribute('data-pending');
 for (const link of nav.querySelectorAll('a')) {

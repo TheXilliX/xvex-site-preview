@@ -97,19 +97,29 @@ function home() {
 }
 
 function sync() {
-  return `<header class="page-intro"><h1>Твои идеи. На твоих устройствах.</h1></header><div class="sync-details narrow">
-    <section>
-      <h2>Одно хранилище на нескольких устройствах</h2>
-      <p>Войдите в один аккаунт на всех устройствах. В «Настройки → Синхронизация» укажите одинаковое имя облачного хранилища.</p>
-      <p>Сначала синхронизируйте устройство с материалами. На втором устройстве выберите пустое локальное хранилище и нажмите «Синхронизировать».</p>
-      <p>Заметки, доски, Kanban и папки сохраняются локально. Обмен отдельными файлами вложений и настройками хранилища пока недоступен.</p>
-      <a href="/account">Проверить доступ в аккаунте</a>
-    </section>
-    <section id="pricing">
-      <h2>Подключение сервиса</h2>
-      <p>Для подключения нужен настроенный сервер синхронизации X.Vex. Публичный сайт GitHub Pages показывает интерфейс, но не обслуживает аккаунты и синхронизацию.</p>
-    </section>
+  const glyph = (body) => '<svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+body+'</svg>';
+  const cloud=glyph('<path d="M7 18a5 5 0 1 1 0-10 6 6 0 0 1 11.7 1.8A4.2 4.2 0 0 1 18 18"/><path d="m9 16 3-3 3 3m-3-3v8"/>');
+  const offline=glyph('<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4m-4-10 3 3 5-5"/>');
+  const layers=glyph('<path d="m12 3 10 6-10 6L2 9 12 3Zm-10 12 10 6 10-6M2 12l10 6 10-6"/>');
+  const lock=glyph('<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/>');
+  const history=glyph('<path d="M3 11a9 9 0 1 1 2 7M3 4v7h7m2-4v6l4 2"/>');
+  return `<div class="sync-page">
+    <header class="sync-hero"><span class="eyebrow">Синхронизация X.Vex</span><h1>Мысли рядом.<br>На любом твоём устройстве.</h1><p>Записывай на компьютере, продолжай на телефоне. Одно хранилище для заметок, досок и дел — с локальной копией на каждом устройстве.</p><div class="sync-actions"><a class="button" href="/account?section=sync">Подключить синхронизацию</a><a class="button secondary" href="#pricing">Доступ и цены</a></div></header>
+    <div class="sync-device-scene" aria-label="Одно хранилище на компьютере и телефоне"><div class="sync-device sync-desktop"><span class="sync-window-dots" aria-hidden="true">● ● ●</span><div><span class="sync-device-icon">${offline}</span><strong>Твоё пространство</strong><span>Заметки · Доски · Канбан</span><div class="sync-note-lines" aria-hidden="true"><i></i><i></i><i></i></div></div></div><div class="sync-connection"><span>${cloud}</span><small>Одно хранилище</small></div><div class="sync-device sync-phone"><span class="sync-phone-speaker" aria-hidden="true"></span><span class="sync-device-icon">${layers}</span><strong>Те же идеи.</strong><span>Теперь под рукой.</span><div class="sync-note-lines" aria-hidden="true"><i></i><i></i><i></i></div></div></div>
+    <section class="sync-feature-section" aria-labelledby="sync-features"><div class="sync-section-title"><span class="eyebrow">Уже в X.Vex</span><h2 id="sync-features">Работай в своём ритме.</h2><p>Материалы остаются на устройстве. Синхронизация помогает перенести их туда, где ты продолжишь.</p></div><div class="sync-feature-grid"><article>${offline}<h3>Без интернета — тоже можно</h3><p>Открывай и меняй локальные материалы офлайн. Когда появится сеть, нажми «Синхронизировать» в настройках.</p></article><article>${layers}<h3>Больше, чем заметки</h3><p>Передавай заметки, доски, канбан и папки. Вложения и настройки пока остаются на каждом устройстве отдельно.</p></article><article>${cloud}<h3>Одно название. Одно пространство.</h3><p>Подключи своё хранилище или создай новое. На другом устройстве выбери его из облака — приложение создаст локальную папку.</p></article></div></section>
+    <section class="sync-pricing" id="pricing" aria-labelledby="sync-price-title"><div class="sync-section-title"><span class="eyebrow">Доступ и цены</span><h2 id="sync-price-title">Выбери, как работать.</h2><p>Локальное пространство всегда рядом. Синхронизацию можно подключить отдельно.</p></div><div class="sync-price-grid"><article class="sync-price-card"><span class="sync-plan-label">На своём устройстве</span><h3>X.Vex</h3><p class="sync-price">Бесплатно</p><p>Для мыслей и дел, которым достаточно одного устройства.</p><ul><li>Заметки, доски и канбан</li><li>Локальные хранилища</li><li>Работа без интернета</li><li>Без обязательной регистрации</li></ul><a class="button secondary" href="/download">Скачать X.Vex</a></article><article class="sync-price-card sync-price-featured"><span class="sync-plan-label">Между устройствами</span><h3>Синхронизация X.Vex</h3><div class="sync-billing" role="group" aria-label="Период подписки"><button type="button" data-billing="month" aria-pressed="true">Месяц</button><button type="button" data-billing="year" aria-pressed="false">Год · −16%</button></div><p class="sync-price" id="sync-price-amount">299 ₽ <span class="sync-price-period">/ месяц</span></p><span class="sync-price-saving" id="sync-price-detail">3 588 ₽ за 12 месяцев при помесячной оплате</span><p>Онлайн-оплата скоро. Сейчас подключить доступ можно по промокоду или через администратора.</p><ul><li>Одно облачное хранилище на аккаунт</li><li>Подключение на компьютере и телефоне</li><li>Локальная копия на каждом устройстве</li><li>Срок доступа — по условиям промокода</li></ul><a class="button" href="/account?section=sync">Открыть аккаунт</a></article></div></section>
+    <section class="sync-roadmap" aria-labelledby="sync-next"><div class="sync-section-title"><span class="eyebrow">Следующие шаги</span><h2 id="sync-next">Сделать синхронизацию ещё лучше.</h2><p>Эти возможности в планах. В текущую версию они ещё не входят.</p></div><div class="sync-roadmap-grid"><article>${lock}<div><h3>Сквозное шифрование <span>В планах</span></h3><p>Защита содержимого так, чтобы прочитать его можно было только на твоих устройствах.</p></div></article><article>${history}<div><h3>История версий <span>В планах</span></h3><p>Возможность посмотреть изменения и вернуться к предыдущей версии материала.</p></div></article></div></section>
+    <section class="sync-faq" aria-labelledby="sync-questions"><h2 id="sync-questions">Осталось разобраться?</h2><details><summary>Как подключить хранилище?</summary><p>Войди в аккаунт в приложении и открой «Настройки → Синхронизация». Подключи текущее хранилище или создай новое. На втором устройстве войди в тот же аккаунт и загрузи хранилище из облака.</p></details><details><summary>Что происходит без интернета?</summary><p>Локальные материалы доступны для чтения и редактирования. Для обмена изменениями нужна сеть: открой настройки синхронизации и нажми «Синхронизировать».</p></details><details><summary>Как получить доступ сейчас?</summary><p>Активируй промокод в аккаунте или обратись в <a href="${supportUrl}">поддержку</a>. Онлайн-оплата пока не подключена.</p></details><details><summary>Можно ли подключиться с телефона?</summary><p>Да, в приложении Android. Текущая тестовая сборка подключается к локальному серверу: компьютер с сервером должен быть включён, а телефон — находиться в той же сети Wi-Fi.</p></details></section>
   </div>`;
+}
+
+function bindSyncPricing() {
+  main.querySelectorAll('[data-billing]').forEach(button=>button.onclick=()=>{
+    const annual=button.dataset.billing==='year';
+    main.querySelectorAll('[data-billing]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));
+    main.querySelector('#sync-price-amount').innerHTML=annual?'2 999 ₽ <span class="sync-price-period">/ год</span>':'299 ₽ <span class="sync-price-period">/ месяц</span>';
+    main.querySelector('#sync-price-detail').textContent=annual?'≈ 250 ₽ в месяц · экономия 589 ₽ за год':'3 588 ₽ за 12 месяцев при помесячной оплате';
+  });
 }
 
 function download() {
@@ -249,7 +259,7 @@ function showProfile() {
   const form=dialog.querySelector('form');
   const edit = kind => {
     const title={signout:'Вы точно хотите выйти из аккаунта?',name:'Изменить имя',email:'Изменить почту',password:'Изменить пароль',logout:'Выйти на всех устройствах?',delete:'Удалить свой аккаунт?'}[kind];
-    form.innerHTML=`<h2 id="account-edit-title">${title}</h2>${kind==='name'?'<label>Имя<input name="name" required maxlength="80" autocomplete="username" placeholder="Латинские буквы, цифры, . - _ / :"></label>':''}${kind==='email'?'<label>Новая почта<input name="email" type="email" required maxlength="254" autocomplete="email"></label>':''}${kind==='delete'?'<p class="delete-warning">Аккаунт и облачные данные будут удалены навсегда. Локальные файлы сохранятся.</p><label>Введи свою почту для подтверждения<input name="email" type="email" required autocomplete="off"></label>':''}${kind==='logout'?'<p class="muted">Сеансы на сайте и во всех приложениях завершатся, включая этот.</p>':''}${kind!=='name'&&kind!=='signout'&&!(kind==='email'&&!account.emailConfirmed)?passwordField('currentPassword','Текущий пароль','current-password'):''}${kind==='password'?passwordField('password','Новый пароль','new-password')+passwordField('repeat','Повторить новый пароль','new-password'):''}<p role="status"></p><div class="profile-actions"><button class="button secondary" type="button" data-cancel>Отмена</button><button class="button${kind==='delete'||kind==='signout'?' danger-button':''}" type="submit">${kind==='delete'?'Удалить аккаунт':kind==='logout'?'Выйти везде':kind==='signout'?'Выйти':'Сохранить'}</button></div>`;
+    form.innerHTML=`<h2 id="account-edit-title">${title}</h2>${kind==='name'?'<label>Имя<input name="name" required maxlength="80" autocomplete="username"></label>':''}${kind==='email'?'<label>Новая почта<input name="email" type="email" required maxlength="254" autocomplete="email"></label>':''}${kind==='delete'?'<p class="delete-warning">Аккаунт и облачные данные будут удалены навсегда. Локальные файлы сохранятся.</p><label>Введи свою почту для подтверждения<input name="email" type="email" required autocomplete="off"></label>':''}${kind==='logout'?'<p class="muted">Сеансы на сайте и во всех приложениях завершатся, включая этот.</p>':''}${kind!=='name'&&kind!=='signout'&&!(kind==='email'&&!account.emailConfirmed)?passwordField('currentPassword','Текущий пароль','current-password'):''}${kind==='password'?passwordField('password','Новый пароль','new-password')+passwordField('repeat','Повторить новый пароль','new-password'):''}<p role="status"></p><div class="profile-actions"><button class="button secondary" type="button" data-cancel>Отмена</button><button class="button${kind==='delete'||kind==='signout'?' danger-button':''}" type="submit">${kind==='delete'?'Удалить аккаунт':kind==='logout'?'Выйти везде':kind==='signout'?'Выйти':'Сохранить'}</button></div>`;
     dialog.setAttribute('aria-labelledby','account-edit-title');dialog.classList.toggle('signout-dialog',kind==='signout');
     if(kind==='name')form.elements.name.value=account.name || '';
     bindPasswordToggles(form);
@@ -616,6 +626,7 @@ document.title = pageTitle ? pageTitle + ' · X.Vex' : 'X.Vex';
 
 if (pages[path]) {
   main.innerHTML = pages[path]();
+  if(path === "/sync") bindSyncPricing();
   for (const button of main.querySelectorAll('[data-tool]')) button.onclick = () => {
     main.querySelectorAll('[data-tool]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
     document.querySelector('#tool-preview').innerHTML = toolPreview(button.dataset.tool);

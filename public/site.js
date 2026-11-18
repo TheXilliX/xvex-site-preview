@@ -421,8 +421,10 @@ function showEmailFlow() {
   if (!requesting && location.hash) history.replaceState(null, '', path);
   const hasLink = /^[\w-]{43}$/.test(token);
   const title = confirming ? 'Подтвердить почту' : requesting ? 'Восстановить пароль' : 'Задать новый пароль';
-  main.innerHTML = `<section class="account-box">
-    <h1>${title}</h1>
+  main.classList.add('auth-page');
+  main.innerHTML = `<section class="account-box auth-card email-flow-card">
+    <header class="auth-heading"><span class="email-flow-symbol" aria-hidden="true">${confirming ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></svg>' : '<span class="auth-symbol brand-mark"></span>'}</span><h1>${title}</h1>
+    ${confirming ? '<p class="muted">Подтверди адрес электронной почты, чтобы защитить доступ к аккаунту X.Vex.</p>' : ''}</header>
     ${requesting || hasLink ? `<form>
       ${requesting ? '<label>Электронная почта<input name="email" type="email" autocomplete="email" maxlength="254" required></label><p class="muted">Для подтверждённой почты тестовая ссылка появится в папке .data/mail.</p>'
         : confirming ? '' : passwordField('password', 'Новый пароль', 'new-password', 'Минимум 8 символов') +
@@ -430,7 +432,7 @@ function showEmailFlow() {
       <button class="button" type="submit">${requesting ? 'Получить ссылку для сброса' : confirming ? 'Подтвердить почту' : 'Сохранить пароль'}</button>
     </form>` : '<p class="muted">Открой ссылку из письма целиком.</p>'}
     <p role="status"></p>
-    <p><a href="/login">Перейти ко входу</a></p>
+    ${confirming ? '' : '<p class="auth-alternative"><a href="/login">Перейти ко входу</a></p>'}
   </section>`;
   const form = main.querySelector('form');
   if (!form) return;
@@ -446,7 +448,8 @@ function showEmailFlow() {
       if (confirming) {
         await api('email/confirm', { token });
         form.hidden = true;
-        return 'Почта подтверждена.';
+        location.replace(email ? '/account' : '/login');
+        return '';
       }
       if (fields.get('password') !== fields.get('repeat')) throw new Error('Пароли не совпадают.');
       await api('password/reset', { token, password: fields.get('password') });

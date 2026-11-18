@@ -435,3 +435,8 @@ main{padding-top:65px}
 .profile-admin-link{display:flex;justify-content:space-between;gap:12px;padding:18px 22px;margin-top:20px;border:1px solid var(--line);background:var(--paper);border-radius:14px;font-size:15px;text-decoration:none}
 .profile-box .profile-status:not(:empty){padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:var(--paper);margin:0 0 20px;font-size:14px;line-height:1.5}
 @media(max-width:820px){.profile-page{padding-block:30px 44px}.profile-grid{grid-template-columns:1fr;gap:16px}.profile-heading{gap:14px}.profile-identity{gap:12px}.profile-avatar{width:48px;height:48px;border-radius:15px;font-size:22px}.profile-box .profile-heading h1{font-size:28px}.profile-heading .muted{font-size:14px}.profile-grid .profile-card{padding:22px}.profile-card>header{flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:wrap;width:100%;margin-bottom:22px}.profile-heading>.button{margin-left:auto}.profile-badge{font-size:11px}}
+.email-flow-symbol{display:grid;place-items:center;width:64px;height:64px;margin:0 auto 22px;border:1px solid var(--line);border-radius:20px;background:var(--selected-widget);color:var(--accent)}
+.email-flow-symbol>svg{width:32px;height:32px}
+.email-flow-symbol .auth-symbol{width:32px;height:32px;margin:0}
+.email-flow-card .auth-heading h1{font-size:30px;line-height:1.2}
+.email-flow-card form[hidden]{display:none}

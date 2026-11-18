@@ -6,6 +6,17 @@ const menu = document.querySelector('.menu');
 const nav = document.querySelector('#nav');
 const accountLink = document.querySelector('#account-link');
 const defaultFooter = document.querySelector('.site-footer').innerHTML;
+const navFrame=document.createElement('span');navFrame.className='navigation-frame';navFrame.setAttribute('aria-hidden','true');document.querySelector('.site-header').prepend(navFrame);
+function positionNavFrame(){
+  const selected=document.querySelector('.site-header a[aria-current]');
+  if(!selected){navFrame.style.opacity='0';return;}
+  const first=!navFrame.dataset.ready;if(first)navFrame.style.transition='none';
+  const parent=navFrame.parentElement.getBoundingClientRect(),rect=selected.getBoundingClientRect();
+  if(!rect.width||!rect.height){navFrame.style.opacity='0';return;}
+  navFrame.style.width=rect.width+'px';navFrame.style.height=rect.height+'px';navFrame.style.transform=`translate(${rect.left-parent.left}px,${rect.top-parent.top}px)`;navFrame.style.opacity='1';
+  if(first){navFrame.dataset.ready='true';requestAnimationFrame(()=>{navFrame.style.transition='';});}
+}
+new ResizeObserver(positionNavFrame).observe(document.querySelector('.site-header'));
 let code = new URLSearchParams(location.search).get('code') ?? '';
 let validCode = /^[A-F0-9]{10}$/.test(code);
 let connectPath = '/connect?code=' + encodeURIComponent(code);
@@ -216,6 +227,7 @@ function bindDuration(form) {
     form.querySelectorAll('[data-unit]').forEach(button=>{button.disabled=forever;button.setAttribute('aria-pressed',String(button.dataset.unit===form.elements.unit.value));});
   };
   form.elements.forever.onchange = update;
+  form.elements.forever.oninput = update;
   form.elements.unit.onchange = update;
   form.querySelectorAll('[data-unit]').forEach(button=>button.onclick=()=>{form.elements.unit.value=button.dataset.unit;update();});
   form.addEventListener('reset', () => setTimeout(update));
@@ -223,20 +235,21 @@ function bindDuration(form) {
 }
 const durationBody = form => ({ forever:form.elements.forever.checked, amount:Number(form.elements.amount.value), unit:form.elements.unit.value });
 
+const accountIcon = name => `<svg width="18" height="18" aria-hidden="true"><use href="/assets/icons.svg#${name}"></use></svg>`;
 function showProfile() {
   main.classList.add('profile-page');
   const section = new URLSearchParams(location.search).get('section') || 'profile';
   const selected = ['profile','payments','sync'].includes(section) ? section : 'profile';
-  main.innerHTML = `<section class="account-workspace"><aside class="account-sidebar"><div class="account-sidebar-identity"><span class="profile-avatar" aria-hidden="true"></span><strong class="account-display-name"></strong></div><nav aria-label="Разделы аккаунта"><button data-section="profile">Профиль</button><button data-section="payments">Оплата</button><button data-section="sync">Синхронизация</button></nav><button id="logout" class="account-logout">Выйти</button></aside><div class="account-content"><p class="profile-status" role="status"></p><div id="account-section"></div></div></section><dialog class="sync-grant-dialog account-edit-dialog"><form></form></dialog>`;
+  main.innerHTML = `<section class="account-workspace"><aside class="account-sidebar"><div class="account-sidebar-identity"><span class="profile-avatar" aria-hidden="true"></span><strong class="account-display-name"></strong></div><nav aria-label="Разделы аккаунта"><button data-section="profile">${accountIcon("user")}Профиль</button><button data-section="payments">${accountIcon("credit-card")}Оплата</button><button data-section="sync">${accountIcon("refresh-cw")}Синхронизация</button></nav><button id="logout" class="account-logout">${accountIcon("log-out")}Выйти</button></aside><div class="account-content"><p class="profile-status" role="status"></p><div id="account-section"></div></div></section><dialog class="sync-grant-dialog account-edit-dialog"><form></form></dialog>`;
   main.querySelector('.account-display-name').textContent = account.name || email;
   main.querySelector('.profile-avatar').textContent = (account.name || email).slice(0,1).toLocaleUpperCase();
   const status=main.querySelector('.profile-status');
-  main.querySelector('#logout').onclick = event => run(event.currentTarget,async()=>{await api('logout',{});location.assign('/login');},status);
+  main.querySelector('#logout').onclick = () => edit('signout');
   const dialog=main.querySelector('.account-edit-dialog');
   const form=dialog.querySelector('form');
   const edit = kind => {
-    const title={name:'Изменить имя',email:'Изменить почту',password:'Изменить пароль',logout:'Выйти на всех устройствах?',delete:'Удалить свой аккаунт?'}[kind];
-    form.innerHTML=`<h2 id="account-edit-title">${title}</h2>${kind==='name'?'<label>Имя<input name="name" maxlength="80" autocomplete="nickname"></label>':''}${kind==='email'?'<label>Новая почта<input name="email" type="email" required maxlength="254" autocomplete="email"></label>':''}${kind==='delete'?'<p class="delete-warning">Аккаунт и облачные данные будут удалены навсегда. Локальные файлы сохранятся.</p><label>Введи свою почту для подтверждения<input name="email" type="email" required autocomplete="off"></label>':''}${kind==='logout'?'<p class="muted">Сеансы на сайте и во всех приложениях завершатся, включая этот.</p>':''}${kind!=='name'?passwordField('currentPassword','Текущий пароль','current-password'):''}${kind==='password'?passwordField('password','Новый пароль','new-password')+passwordField('repeat','Повторить новый пароль','new-password'):''}<p role="status"></p><div class="profile-actions"><button class="button secondary" type="button" data-cancel>Отмена</button><button class="button${kind==='delete'?' danger-button':''}" type="submit">${kind==='delete'?'Удалить аккаунт':kind==='logout'?'Выйти везде':'Сохранить'}</button></div>`;
+    const title={signout:'Выйти из аккаунта?',name:'Изменить имя',email:'Изменить почту',password:'Изменить пароль',logout:'Выйти на всех устройствах?',delete:'Удалить свой аккаунт?'}[kind];
+    form.innerHTML=`<h2 id="account-edit-title">${title}</h2>${kind==='name'?'<label>Имя<input name="name" required maxlength="80" autocomplete="username" placeholder="Латинские буквы, цифры, . - _ / :"></label>':''}${kind==='email'?'<label>Новая почта<input name="email" type="email" required maxlength="254" autocomplete="email"></label>':''}${kind==='delete'?'<p class="delete-warning">Аккаунт и облачные данные будут удалены навсегда. Локальные файлы сохранятся.</p><label>Введи свою почту для подтверждения<input name="email" type="email" required autocomplete="off"></label>':''}${kind==='logout'?'<p class="muted">Сеансы на сайте и во всех приложениях завершатся, включая этот.</p>':''}${kind!=='name'&&kind!=='signout'?passwordField('currentPassword','Текущий пароль','current-password'):''}${kind==='password'?passwordField('password','Новый пароль','new-password')+passwordField('repeat','Повторить новый пароль','new-password'):''}<p role="status"></p><div class="profile-actions"><button class="button secondary" type="button" data-cancel>Отмена</button><button class="button${kind==='delete'?' danger-button':''}" type="submit">${kind==='delete'?'Удалить аккаунт':kind==='logout'?'Выйти везде':kind==='signout'?'Выйти':'Сохранить'}</button></div>`;
     dialog.setAttribute('aria-labelledby','account-edit-title');
     if(kind==='name')form.elements.name.value=account.name || '';
     bindPasswordToggles(form);
@@ -250,8 +263,8 @@ function showProfile() {
         const payload=Object.fromEntries(new FormData(form));
         cancel.disabled=true;
         let result;
-        try {result=await api('account/'+({name:'profile',logout:'logout-all'}[kind]||kind),payload);} finally {cancel.disabled=false;}
-        if(kind==='logout'||kind==='delete'){location.replace('/login');return;}
+        try {result=await api(kind==='signout'?'logout':'account/'+({name:'profile',logout:'logout-all'}[kind]||kind),payload);} finally {cancel.disabled=false;}
+        if(kind==='signout'||kind==='logout'||kind==='delete'){location.replace('/login');return;}
         if(kind==='name')account.name=result.name;
         if(kind==='email'){Object.assign(account,result);email=result.email;}
         dialog.close();showProfile();
@@ -330,11 +343,16 @@ async function showAdmin() {
       const row = document.createElement('li');
       row.innerHTML = '<div><strong></strong><span class="muted"></span></div><button class="button secondary" type="button">Отключить</button>';
       row.querySelector('strong').textContent = promo.code;
-      row.querySelector('span').textContent = `${promo.duration_hours === null ? 'Навсегда' : promo.duration_hours % 24 === 0 ? promo.duration_hours / 24 + ' дн.' : promo.duration_hours + ' ч.'} · Активации: ${promo.uses} / ${promo.max_uses}${promo.disabled ? ' · Отключён' : ''}`;
+      row.querySelector('span').textContent = `${promo.duration_hours === null ? 'Навсегда' : promo.duration_hours % 24 === 0 ? promo.duration_hours / 24 + ' дн.' : promo.duration_hours + ' ч.'} · Активации: ${promo.uses} / ${promo.max_uses}`;
       const button = row.querySelector('button');
       const actions=document.createElement('div');actions.className='promo-actions';row.append(actions);actions.append(button);
       button.textContent=promo.disabled?'Включить':'Отключить';
-      button.onclick = () => run(button, async () => { await api('admin/promos/state',{ id:promo.id,enabled:!!promo.disabled }); await loadPromos(); return promo.disabled?'Промокод включён.':'Промокод отключён. Выданный доступ сохранён.'; },promoStatus);
+      button.onclick = async () => {
+        button.disabled=true;
+        try {await api('admin/promos/state',{id:promo.id,enabled:!!promo.disabled});promo.disabled=promo.disabled?0:1;button.textContent=promo.disabled?'Включить':'Отключить';row.querySelector('span').textContent=`${promo.duration_hours===null?'Навсегда':promo.duration_hours%24===0?promo.duration_hours/24+' дн.':promo.duration_hours+' ч.'} · Активации: ${promo.uses} / ${promo.max_uses}`;}
+        catch(error){promoStatus.textContent=error.message;promoStatus.dataset.error='';}
+        finally{button.disabled=false;}
+      };
       const remove=document.createElement('button');remove.type='button';remove.className='button secondary danger-button';remove.textContent='Удалить';actions.append(remove);
       remove.onclick=()=>{
         const modal=document.createElement('dialog');modal.className='sync-grant-dialog promo-delete-dialog';
@@ -494,7 +512,8 @@ function showAccount() {
   main.innerHTML = `<section class="account-box auth-card"><header class="auth-heading"><span class="auth-symbol brand-mark" aria-hidden="true"></span><h1>${registration ? 'Создай своё пространство' : 'С возвращением.'}</h1>
     <p class="muted">${registration ? 'Один аккаунт для твоих устройств.' : 'Продолжи работу в X.Vex.'}</p></header>
     <form>
-      <label>Электронная почта<input type="email" name="email" autocomplete="email" required maxlength="254"></label>
+      ${registration?'<label>Имя<input name="name" required maxlength="80" autocomplete="username" placeholder="Например, The_XilliX"></label>':''}
+      <label>${registration?'Электронная почта':'Имя или электронная почта'}<input type="${registration?'email':'text'}" name="email" autocomplete="${registration?'email':'username'}" required maxlength="254"></label>
       ${passwordField('password', 'Пароль', registration ? 'new-password' : 'current-password', registration ? 'Минимум 8 символов' : '')}
       ${registration ? passwordField('repeat', 'Повторить пароль', 'new-password') : ''}
       ${registration ? '' : '<a class="password-recovery" href="/forgot-password">Забыли пароль?</a>'}
@@ -508,7 +527,7 @@ function showAccount() {
     const fields = new FormData(event.currentTarget);
     void run(event.submitter, async () => {
       if (registration && fields.get('password') !== fields.get('repeat')) throw new Error('Пароли не совпадают.');
-      await api(registration ? 'register' : 'login', { email: fields.get('email'), password: fields.get('password') });
+      await api(registration ? 'register' : 'login', { email: fields.get('email'), password: fields.get('password'),...(registration?{name:fields.get('name')}:{}) });
       location.assign(accountPath);
     });
   };
@@ -670,6 +689,7 @@ if (path === '/admin') {
   if (!accountLink.hasAttribute('aria-current')) accountLink.setAttribute('aria-current', 'true');
   showAccount();
 }
+positionNavFrame();
 }
 
 await renderRoute();
@@ -683,21 +703,22 @@ function navigate(url, pop = false) {
       window.scrollTo({top:0,left:0,behavior:'instant'});
       if (location.hash) document.getElementById(decodeURIComponent(location.hash.slice(1)))?.scrollIntoView();
     };
-    if (document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      await document.startViewTransition(update).finished;
-    } else await update();
+    await update();
   });
 }
 document.addEventListener('click',event=>{
   const link=event.target.closest('a[href]');
   if (!link || event.defaultPrevented || event.button!==0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || link.target || link.hasAttribute('download')) return;
   const url=new URL(link.href);
-  if (url.origin!==location.origin || (url.pathname===location.pathname && url.search===location.search)) return;
+  if (url.origin!==location.origin) return;
+  if(url.pathname===location.pathname && url.search===location.search){if(!url.hash){event.preventDefault();window.scrollTo({top:0,behavior:'smooth'});}return;}
   const route=url.pathname.slice(siteBase.length).replace(/\/$/,'') || '/';
   if (!(route in pages || route in titles || route in emailFlowTitles)) return;
   event.preventDefault(); navigate(url.href);
 });
 window.addEventListener('popstate',()=>navigate(location.href,true));
+
+
 
 
 

@@ -67,7 +67,7 @@ function home() {
     </section>
     <section class="home-sync" aria-labelledby="sync-title">
       <h2 id="sync-title">Синхронизация между устройствами</h2>
-      <p>Начни мысль на компьютере, продолжи на телефоне. Подключай хранилища через аккаунт X.Vex Sync, сохраняя доступ к локальным материалам без интернета.</p>
+      <p>Начни мысль на компьютере, продолжи на телефоне. Подключай хранилища через аккаунт Синхронизация X.Vex, сохраняя доступ к локальным материалам без интернета.</p>
       <a class="button secondary" href="/sync">Подробнее о синхронизации</a>
     </section>
     <section class="home-download" aria-labelledby="download-title">
@@ -96,7 +96,7 @@ function sync() {
     </section>
     <section id="pricing">
       <h2>Подключение сервиса</h2>
-      <p>Для подключения нужен настроенный сервер X.Vex Sync. Публичный сайт GitHub Pages показывает интерфейс, но не обслуживает аккаунты и синхронизацию.</p>
+      <p>Для подключения нужен настроенный сервер Синхронизация X.Vex. Публичный сайт GitHub Pages показывает интерфейс, но не обслуживает аккаунты и синхронизацию.</p>
     </section>
   </div>`;
 }
@@ -223,52 +223,70 @@ const durationBody = form => ({ forever:form.elements.forever.checked, amount:Nu
 
 function showProfile() {
   main.classList.add('profile-page');
-  main.innerHTML = `<section class="account-box profile-box">
-    <div class="profile-heading">
-      <div class="profile-identity"><span class="profile-avatar" aria-hidden="true"></span><div><h1>Твой аккаунт</h1><p class="muted">Профиль и доступ к X.Vex.</p></div></div>
-      <button class="button secondary" id="logout" type="button">Выйти</button>
-    </div>
-    <p class="profile-status" role="status"></p>
-    <div class="profile-grid"><section class="profile-card">
-      <header><h2>Личные данные</h2><span class="profile-badge${account.emailConfirmed ? ' is-active' : ''}">${account.emailConfirmed ? 'Почта подтверждена' : 'Нужно подтверждение'}</span></header>
-      <div class="profile-email-row"><span class="muted">Электронная почта</span><strong id="account-email"></strong></div>
-      ${account.emailConfirmed ? '<p class="profile-detail">Адрес подтверждён. Его можно использовать для восстановления доступа.</p>' : '<p class="profile-detail">Подтверди почту, чтобы можно было восстановить доступ к аккаунту.</p><button class="button secondary" id="confirm-email" type="button">Получить ссылку</button><p class="profile-local-help">В локальной версии письмо сохраняется на компьютере с сервером.</p>'}
-    </section>
-    <section class="profile-card profile-sync-card">
-      <header><h2>X.Vex Sync</h2><span class="profile-badge${hasSyncAccess(account) ? ' is-active' : ''}">${hasSyncAccess(account) ? 'Доступ открыт' : 'Не подключено'}</span></header>
-      <p class="profile-sync-summary">${hasSyncAccess(account) ? 'Доступ выдан администратором · ' + syncExpiration(account) : 'Доступ включается отдельно'}</p>
-      <p class="profile-detail">${hasSyncAccess(account) ? 'Войди в этот аккаунт в приложении и открой настройки синхронизации.' : 'Аккаунт уже работает. Когда перейдём к синхронизации, администратор сможет открыть доступ к Sync.'}</p>
-      <form class="promo-redeem"><label>Есть промокод?<input name="code" placeholder="Введи промокод" maxlength="40" required autocomplete="off"></label><button class="button secondary" type="submit">Активировать</button><p role="status"></p></form>
-      <a class="profile-text-link" href="/sync">О синхронизации <span aria-hidden="true">↗</span></a>
-    </section></div>
-    ${account.admin ? '<a class="profile-admin-link" href="/admin">Открыть админ-панель <span aria-hidden="true">→</span></a>' : ''}
-  </section>`;
-  main.querySelector('#account-email').textContent = email;
-  main.querySelector('.profile-avatar').textContent = email.slice(0, 1).toLocaleUpperCase();
-  const promoForm = main.querySelector('.promo-redeem');
-  promoForm.onsubmit = event => {
-    event.preventDefault();
-    void run(event.submitter, async () => {
-      Object.assign(account, await api('promo/redeem', { code:promoForm.elements.code.value }));
-      showProfile();
-      main.querySelector('.profile-status').textContent = 'Промокод активирован. Доступ к Sync открыт.';
-    }, promoForm.querySelector('[role=status]'));
+  const section = new URLSearchParams(location.search).get('section') || 'profile';
+  const selected = ['profile','payments','sync'].includes(section) ? section : 'profile';
+  main.innerHTML = `<section class="account-workspace"><aside class="account-sidebar"><div class="account-sidebar-identity"><span class="profile-avatar" aria-hidden="true"></span><strong class="account-display-name"></strong></div><nav aria-label="Разделы аккаунта"><button data-section="profile">Профиль</button><button data-section="payments">Оплата</button><button data-section="sync">Синхронизация</button></nav><button id="logout" class="account-logout">Выйти</button></aside><div class="account-content"><p class="profile-status" role="status"></p><div id="account-section"></div></div></section><dialog class="sync-grant-dialog account-edit-dialog"><form></form></dialog>`;
+  main.querySelector('.account-display-name').textContent = account.name || email;
+  main.querySelector('.profile-avatar').textContent = (account.name || email).slice(0,1).toLocaleUpperCase();
+  const status=main.querySelector('.profile-status');
+  main.querySelector('#logout').onclick = event => run(event.currentTarget,async()=>{await api('logout',{});location.assign('/login');},status);
+  const dialog=main.querySelector('.account-edit-dialog');
+  const form=dialog.querySelector('form');
+  const edit = kind => {
+    const title={name:'Изменить имя',email:'Изменить почту',password:'Изменить пароль',logout:'Выйти на всех устройствах?',delete:'Удалить свой аккаунт?'}[kind];
+    form.innerHTML=`<h2 id="account-edit-title">${title}</h2>${kind==='name'?'<label>Имя<input name="name" maxlength="80" autocomplete="nickname"></label>':''}${kind==='email'?'<label>Новая почта<input name="email" type="email" required maxlength="254" autocomplete="email"></label>':''}${kind==='delete'?'<p class="delete-warning">Аккаунт и облачные данные будут удалены навсегда. Локальные файлы сохранятся.</p><label>Введи свою почту для подтверждения<input name="email" type="email" required autocomplete="off"></label>':''}${kind==='logout'?'<p class="muted">Сеансы на сайте и во всех приложениях завершатся, включая этот.</p>':''}${kind!=='name'?passwordField('currentPassword','Текущий пароль','current-password'):''}${kind==='password'?passwordField('password','Новый пароль','new-password')+passwordField('repeat','Повторить новый пароль','new-password'):''}<p role="status"></p><div class="profile-actions"><button class="button secondary" type="button" data-cancel>Отмена</button><button class="button${kind==='delete'?' danger-button':''}" type="submit">${kind==='delete'?'Удалить аккаунт':kind==='logout'?'Выйти везде':'Сохранить'}</button></div>`;
+    dialog.setAttribute('aria-labelledby','account-edit-title');
+    if(kind==='name')form.elements.name.value=account.name || '';
+    bindPasswordToggles(form);
+    const cancel=form.querySelector('[data-cancel]');
+    cancel.onclick=()=>dialog.close();
+    dialog.oncancel=event=>{if(cancel.disabled)event.preventDefault();};
+    form.onsubmit=event=>{
+      event.preventDefault();
+      void run(event.submitter,async()=>{
+        if(kind==='password'&&form.elements.password.value!==form.elements.repeat.value)throw new Error('Пароли не совпадают.');
+        const payload=Object.fromEntries(new FormData(form));
+        cancel.disabled=true;
+        let result;
+        try {result=await api('account/'+({name:'profile',logout:'logout-all'}[kind]||kind),payload);} finally {cancel.disabled=false;}
+        if(kind==='logout'||kind==='delete'){location.replace('/login');return;}
+        if(kind==='name')account.name=result.name;
+        if(kind==='email'){Object.assign(account,result);email=result.email;}
+        dialog.close();showProfile();
+        main.querySelector('.profile-status').textContent=kind==='password'?'Пароль изменён. Остальные сеансы завершены.':kind==='email'?'Почта изменена. Подтверди новый адрес.':'Имя сохранено.';
+      },form.querySelector('[role=status]'));
+    };
+    dialog.showModal();
   };
-  const confirm = main.querySelector('#confirm-email');
-  if (confirm) confirm.onclick = () => run(confirm, async () => {
-    await api('email/request', {});
-    return 'Ссылка создана. Письмо сохранено в локальной папке писем сервера.';
-  });
-  const logout = main.querySelector('#logout');
-  logout.onclick = () => run(logout, async () => {
-    await api('logout', {});
-    location.assign('/login');
-  });
+  const paint = tab => {
+    main.querySelectorAll('[data-section]').forEach(button=>button.setAttribute('aria-current',button.dataset.section===tab?'page':'false'));
+    const content=main.querySelector('#account-section');
+    if(tab==='profile'){
+      content.innerHTML=`<header class="account-section-heading"><h1>Твой профиль</h1><p class="muted">Личные данные и безопасность аккаунта.</p></header><section class="account-settings-card"><div class="account-setting-row"><div><h2>Имя</h2><p id="profile-name"></p></div><button class="button secondary" data-edit="name">Изменить</button></div><div class="account-setting-row"><div><h2>Электронная почта</h2><p id="account-email"></p><span class="profile-badge${account.emailConfirmed?' is-active':''}">${account.emailConfirmed?'Почта подтверждена':'Нужно подтверждение'}</span></div><div class="account-row-buttons"><button class="button secondary" data-edit="email">Изменить</button>${account.emailConfirmed?'':'<button class="button secondary" id="confirm-email">Получить ссылку</button>'}</div></div><div class="account-setting-row"><div><h2>Пароль</h2><p>Измени пароль для входа в аккаунт.</p></div><button class="button secondary" data-edit="password">Изменить</button></div><div class="account-setting-row"><div><h2>Двухфакторная аутентификация</h2><p>Дополнительная защита входа. Подключим следующим этапом.</p></div><span class="account-coming">Скоро</span></div><div class="account-setting-row"><div><h2>Связаться с поддержкой</h2><p>Поможем с аккаунтом и синхронизацией.</p></div><a class="button secondary" href="${supportUrl}">Написать</a></div><div class="account-setting-row"><div><h2>Выйти везде</h2><p>Завершить сеансы на всех устройствах.</p></div><button class="button secondary" data-edit="logout">Выйти везде</button></div><div class="account-setting-row"><div><h2>Удалить аккаунт</h2><p>Удалить аккаунт и облачные данные навсегда.</p></div><button class="button secondary danger-button" data-edit="delete">Удалить</button></div></section>`;
+      content.querySelector('#profile-name').textContent=account.name||'Имя пока не указано';
+      content.querySelector('#account-email').textContent=email;
+      content.querySelectorAll('[data-edit]').forEach(button=>button.onclick=()=>edit(button.dataset.edit));
+      const confirm=content.querySelector('#confirm-email');
+      if(confirm)confirm.onclick=()=>run(confirm,async()=>{await api('email/request',{});return 'Ссылка создана. Письмо сохранено в локальной папке писем сервера.';},status);
+    }else if(tab==='payments'){
+      content.innerHTML=`<header class="account-section-heading"><h1>Оплата</h1><p class="muted">Промокоды и доступ к сервисам.</p></header><section class="account-settings-card"><div class="account-setting-row"><div><h2>Способ оплаты</h2><p>Онлайн-оплата пока не подключена. Доступ можно получить по промокоду или у администратора.</p></div></div><div class="account-setting-row"><div><h2>Счета и возвраты</h2><p>Платежей и счетов пока нет.</p></div></div></section><section class="profile-card promo-history"><h2>История промокодов</h2><p class="muted" data-history-status>Загружаем историю…</p><ul></ul></section>`;
+      const history=content.querySelector('.promo-history');
+      void api('account/promos').then(({promos})=>{
+        history.querySelector('[data-history-status]').textContent=promos.length?'':'Ты ещё не активировал ни одного промокода.';
+        for(const item of promos){const row=document.createElement('li');row.innerHTML='<strong></strong><span class="muted"></span>';row.querySelector('strong').textContent=item.code;row.querySelector('span').textContent=new Date(item.redeemed_at).toLocaleDateString('ru-RU')+' · '+(item.duration_hours===null?'Навсегда':item.duration_hours%24===0?item.duration_hours/24+' дн.':item.duration_hours+' ч.');history.querySelector('ul').append(row);}
+      }).catch(error=>{history.querySelector('[data-history-status]').textContent=error.message;});
+    }else{
+      content.innerHTML=`<header class="account-section-heading"><h1>Синхронизация</h1><p class="muted">Твои материалы на твоих устройствах.</p></header><section class="profile-card profile-sync-card"><header><h2>Синхронизация X.Vex</h2><span class="profile-badge${hasSyncAccess(account)?' is-active':''}">${hasSyncAccess(account)?'Доступ открыт':'Не подключено'}</span></header><p class="profile-sync-summary">${hasSyncAccess(account)?'Доступ действует · '+syncExpiration(account):'Активируй доступ к синхронизации'}</p><p class="profile-detail">${hasSyncAccess(account)?'Войди в этот аккаунт в приложении и открой настройки синхронизации.':'Введи промокод или обратись к администратору, чтобы подключить синхронизацию.'}</p><form class="promo-redeem"><label>Промокод<input name="code" placeholder="Введи промокод" maxlength="40" required autocomplete="off"></label><button class="button secondary" type="submit">Активировать</button><p role="status"></p></form><a class="profile-text-link" href="/sync">О синхронизации <span aria-hidden="true">↗</span></a></section>`;
+      const promo=content.querySelector('.promo-redeem');
+      promo.onsubmit=event=>{event.preventDefault();void run(event.submitter,async()=>{Object.assign(account,await api('promo/redeem',{code:promo.elements.code.value}));paint('sync');status.textContent='Промокод активирован. Доступ к синхронизации открыт.';},promo.querySelector('[role=status]'));};
+    }
+  };
+  main.querySelectorAll('[data-section]').forEach(button=>button.onclick=()=>{history.replaceState(null,'',siteBase+'/account'+(button.dataset.section==='profile'?'':'?section='+button.dataset.section));paint(button.dataset.section);});
+  paint(selected);
 }
-
 async function showAdmin() {
   main.classList.add('admin-page');
-  main.innerHTML = `<header class="admin-heading"><span class="profile-avatar" aria-hidden="true">✦</span><div><h1>Админ-панель</h1><p class="muted">Аккаунты, доступ к Sync и промокоды.</p></div></header>`;
+  main.innerHTML = `<header class="admin-heading"><span class="profile-avatar" aria-hidden="true">✦</span><div><h1>Админ-панель</h1><p class="muted">Аккаунты, доступ к синхронизации и промокоды.</p></div></header>`;
   if (!account?.admin) {
     main.insertAdjacentHTML('beforeend', email
       ? '<p class="page-intro">Эта страница доступна администратору.</p>'
@@ -282,7 +300,7 @@ async function showAdmin() {
   </section><section class="admin-card admin-promos"><header><h2>Промокоды</h2><p class="muted">Срок начинается с активации. Один аккаунт может применить каждый код один раз.</p></header><form id="promo-create"><div class="promo-basics"><label>Промокод<input name="code" placeholder="Например, XVEX-START" minlength="4" maxlength="40" pattern="[A-Za-z0-9][A-Za-z0-9_-]{3,39}" required autocomplete="off"></label><label>Число активаций<input name="maxUses" type="number" min="1" max="100000" step="1" value="1" required></label></div>${durationFields()}<button class="button" type="submit">Создать промокод</button><p role="status"></p></form><ul class="promo-list" aria-label="Промокоды"></ul></section>
   <dialog class="sync-grant-dialog" aria-labelledby="sync-grant-title">
     <form>
-      <h2 id="sync-grant-title">Выдать доступ к Sync</h2>
+      <h2 id="sync-grant-title">Выдать доступ к синхронизации</h2>
       <p class="muted" data-grant-email></p>
       ${durationFields()}
       <p role="status"></p>
@@ -378,7 +396,7 @@ async function showAdmin() {
       };
       const paint = () => {
         const enabled = hasSyncAccess(entry);
-        access.textContent = (enabled ? 'Доступ к Sync · ' + syncExpiration(entry) : 'Без доступа к Sync') + (entry.admin ? ' · Администратор' : '');
+        access.textContent = (enabled ? 'Доступ к синхронизации · ' + syncExpiration(entry) : 'Без доступа к синхронизации') + (entry.admin ? ' · Администратор' : '');
         button.textContent = enabled ? 'Отозвать доступ' : 'Выдать доступ';
         button.setAttribute('aria-label', `${button.textContent} — ${entry.email}`);
       };
@@ -666,4 +684,6 @@ document.addEventListener('click',event=>{
   event.preventDefault(); navigate(url.href);
 });
 window.addEventListener('popstate',()=>navigate(location.href,true));
+
+
 

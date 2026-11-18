@@ -67,7 +67,7 @@ function home() {
     </section>
     <section class="home-sync" aria-labelledby="sync-title">
       <h2 id="sync-title">Синхронизация между устройствами</h2>
-      <p>Начни мысль на компьютере, продолжи на телефоне. Подключай хранилища через аккаунт Синхронизация X.Vex, сохраняя доступ к локальным материалам без интернета.</p>
+      <p>Начни мысль на компьютере, продолжи на телефоне. Подключай хранилища через аккаунт X.Vex, сохраняя доступ к локальным материалам без интернета.</p>
       <a class="button secondary" href="/sync">Подробнее о синхронизации</a>
     </section>
     <section class="home-download" aria-labelledby="download-title">
@@ -96,7 +96,7 @@ function sync() {
     </section>
     <section id="pricing">
       <h2>Подключение сервиса</h2>
-      <p>Для подключения нужен настроенный сервер Синхронизация X.Vex. Публичный сайт GitHub Pages показывает интерфейс, но не обслуживает аккаунты и синхронизацию.</p>
+      <p>Для подключения нужен настроенный сервер синхронизации X.Vex. Публичный сайт GitHub Pages показывает интерфейс, но не обслуживает аккаунты и синхронизацию.</p>
     </section>
   </div>`;
 }
@@ -684,6 +684,7 @@ document.addEventListener('click',event=>{
   event.preventDefault(); navigate(url.href);
 });
 window.addEventListener('popstate',()=>navigate(location.href,true));
+
 
 
 

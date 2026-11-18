@@ -123,7 +123,7 @@ function bindSyncPricing() {
 }
 
 function download() {
-  return `<header class="download-hero"><span class="brand-mark" aria-hidden="true"></span><h1>X.Vex</h1><p>Твоё пространство для идей и дел.</p><a class="button" href="https://github.com/TheXilliX/xvex-updates/releases/download/v0.1.21/X.Vex_0.1.21_x64-setup.exe" id="primary-download">Скачать для Windows</a><small>Windows x64 · версия 0.1.21</small></header><div class="platforms narrow"><h2>Все платформы</h2>
+  return `<header class="download-hero"><span class="brand-mark" aria-hidden="true"></span><h1>X.Vex</h1><p>Твоё пространство для идей и дел.</p></header><div class="platforms narrow"><h2>Все платформы</h2>
     <section class="platform"><div><strong>Windows</strong><small id="windows-version">Windows x64 · установщик</small></div><a id="windows-download" class="button" href="https://github.com/TheXilliX/xvex-updates/releases/download/v0.1.21/X.Vex_0.1.21_x64-setup.exe">Скачать для Windows</a></section>
     <section class="platform"><div><strong>Android</strong><small>ARM64 · версия 0.1.21</small><div class="channels"><span>Google Play — не опубликовано</span><span>RuStore — не опубликовано</span></div></div><a id="android-download" class="button secondary" href="https://github.com/TheXilliX/xvex-updates/releases/download/v0.1.21/X.Vex-0.1.21-Android-arm64.apk">Скачать APK</a></section>
     <section class="platform"><div><strong>iPhone и iPad</strong><div class="channels">App Store</div></div><small>Скоро</small></section>
@@ -298,7 +298,9 @@ function showProfile() {
         catch(error){status.textContent=error.message;confirm.disabled=false;}
       };
     }else if(tab==='payments'){
-      content.innerHTML=`<header class="account-section-heading"><h1>Оплата</h1><p class="muted">Промокоды и доступ к сервисам.</p></header><section class="account-settings-card"><div class="account-setting-row"><div><h2>Способ оплаты</h2><p>Онлайн-оплата пока не подключена. Доступ можно получить по промокоду или у администратора.</p></div></div><div class="account-setting-row"><div><h2>Счета и возвраты</h2><p>Платежей и счетов пока нет.</p></div></div></section><section class="profile-card promo-history"><h2>История промокодов</h2><p class="muted" data-history-status>Загружаем историю…</p><ul></ul></section>`;
+      content.innerHTML=`<header class="account-section-heading"><h1>Оплата</h1><p class="muted">Промокоды и доступ к сервисам.</p></header><section class="account-settings-card"><div class="account-setting-row"><div><h2>Способ оплаты</h2><p>Онлайн-оплата пока не подключена. Доступ можно получить по промокоду или у администратора.</p></div></div><div class="account-setting-row"><div><h2>Счета и возвраты</h2><p>Платежей и счетов пока нет.</p></div></div></section><section class="profile-card payment-promo"><h2>Активировать промокод</h2><p class="muted">Промокод открывает или продлевает доступ к синхронизации.</p><form class="promo-redeem"><label>Промокод<input name="code" placeholder="Введи промокод" maxlength="40" required autocomplete="off"></label><button class="button" type="submit">Активировать</button><p role="status"></p></form></section><section class="profile-card promo-history"><h2>История промокодов</h2><p class="muted" data-history-status>Загружаем историю…</p><ul></ul></section>`;
+      const promo=content.querySelector('.promo-redeem');
+      promo.onsubmit=event=>{event.preventDefault();void run(event.submitter,async()=>{Object.assign(account,await api('promo/redeem',{code:promo.elements.code.value}));paint('payments');status.textContent='Промокод активирован. Доступ к синхронизации открыт.';},promo.querySelector('[role=status]'));};
       const history=content.querySelector('.promo-history');
       void api('account/promos').then(({promos})=>{
         history.querySelector('[data-history-status]').textContent=promos.length?'':'Ты ещё не активировал ни одного промокода.';
@@ -636,7 +638,7 @@ if (pages[path]) {
     fetch('https://api.github.com/repos/TheXilliX/xvex-updates/releases/latest').then(r => { if (!r.ok) throw new Error(); return r.json(); }).then(release => {
       const windows = release.assets.find(asset => /_x64-setup\.exe$/.test(asset.name));
       const android = release.assets.find(asset => /Android-arm64\.apk$/.test(asset.name));
-      if (windows) { document.querySelector('#windows-download').href = windows.browser_download_url; document.querySelector('#primary-download').href = windows.browser_download_url; }
+      if (windows) { document.querySelector('#windows-download').href = windows.browser_download_url; }
       if (android) document.querySelector('#android-download').href = android.browser_download_url;
     }).catch(() => {});
     api('release').then(({ version }) => {

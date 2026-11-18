@@ -248,9 +248,9 @@ function showProfile() {
   const dialog=main.querySelector('.account-edit-dialog');
   const form=dialog.querySelector('form');
   const edit = kind => {
-    const title={signout:'Выйти из аккаунта?',name:'Изменить имя',email:'Изменить почту',password:'Изменить пароль',logout:'Выйти на всех устройствах?',delete:'Удалить свой аккаунт?'}[kind];
-    form.innerHTML=`<h2 id="account-edit-title">${title}</h2>${kind==='name'?'<label>Имя<input name="name" required maxlength="80" autocomplete="username" placeholder="Латинские буквы, цифры, . - _ / :"></label>':''}${kind==='email'?'<label>Новая почта<input name="email" type="email" required maxlength="254" autocomplete="email"></label>':''}${kind==='delete'?'<p class="delete-warning">Аккаунт и облачные данные будут удалены навсегда. Локальные файлы сохранятся.</p><label>Введи свою почту для подтверждения<input name="email" type="email" required autocomplete="off"></label>':''}${kind==='logout'?'<p class="muted">Сеансы на сайте и во всех приложениях завершатся, включая этот.</p>':''}${kind!=='name'&&kind!=='signout'?passwordField('currentPassword','Текущий пароль','current-password'):''}${kind==='password'?passwordField('password','Новый пароль','new-password')+passwordField('repeat','Повторить новый пароль','new-password'):''}<p role="status"></p><div class="profile-actions"><button class="button secondary" type="button" data-cancel>Отмена</button><button class="button${kind==='delete'?' danger-button':''}" type="submit">${kind==='delete'?'Удалить аккаунт':kind==='logout'?'Выйти везде':kind==='signout'?'Выйти':'Сохранить'}</button></div>`;
-    dialog.setAttribute('aria-labelledby','account-edit-title');
+    const title={signout:'Вы точно хотите выйти из аккаунта?',name:'Изменить имя',email:'Изменить почту',password:'Изменить пароль',logout:'Выйти на всех устройствах?',delete:'Удалить свой аккаунт?'}[kind];
+    form.innerHTML=`<h2 id="account-edit-title">${title}</h2>${kind==='name'?'<label>Имя<input name="name" required maxlength="80" autocomplete="username" placeholder="Латинские буквы, цифры, . - _ / :"></label>':''}${kind==='email'?'<label>Новая почта<input name="email" type="email" required maxlength="254" autocomplete="email"></label>':''}${kind==='delete'?'<p class="delete-warning">Аккаунт и облачные данные будут удалены навсегда. Локальные файлы сохранятся.</p><label>Введи свою почту для подтверждения<input name="email" type="email" required autocomplete="off"></label>':''}${kind==='logout'?'<p class="muted">Сеансы на сайте и во всех приложениях завершатся, включая этот.</p>':''}${kind!=='name'&&kind!=='signout'?passwordField('currentPassword','Текущий пароль','current-password'):''}${kind==='password'?passwordField('password','Новый пароль','new-password')+passwordField('repeat','Повторить новый пароль','new-password'):''}<p role="status"></p><div class="profile-actions"><button class="button secondary" type="button" data-cancel>Отмена</button><button class="button${kind==='delete'||kind==='signout'?' danger-button':''}" type="submit">${kind==='delete'?'Удалить аккаунт':kind==='logout'?'Выйти везде':kind==='signout'?'Выйти':'Сохранить'}</button></div>`;
+    dialog.setAttribute('aria-labelledby','account-edit-title');dialog.classList.toggle('signout-dialog',kind==='signout');
     if(kind==='name')form.elements.name.value=account.name || '';
     bindPasswordToggles(form);
     const cancel=form.querySelector('[data-cancel]');
@@ -717,6 +717,7 @@ document.addEventListener('click',event=>{
   event.preventDefault(); navigate(url.href);
 });
 window.addEventListener('popstate',()=>navigate(location.href,true));
+
 
 
 

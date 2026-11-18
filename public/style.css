@@ -563,3 +563,25 @@ input:focus,.auth-card input:focus,.admin-page input:not([role=switch]):focus{ou
 @media(prefers-reduced-motion:reduce){.sync-device{transform:none}}
 .sync-billing{display:flex;gap:4px;padding:4px;width:max-content;max-width:100%;border:1px solid var(--line);border-radius:10px;background:var(--canvas);margin:0 0 20px}.sync-billing button{background:transparent;border:1px solid transparent;color:var(--muted);border-radius:7px;padding:8px 14px;font-size:14px}.sync-billing button[aria-pressed=true]{background:var(--paper);border-color:var(--line);color:var(--text)}
 .cloud-account-storage>header{display:flex;align-items:center;justify-content:space-between;gap:14px}.cloud-refresh{width:36px;height:36px;border:1px solid var(--line);border-radius:9px;background:transparent;color:var(--text);font:inherit;cursor:pointer}.cloud-usage-numbers{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin:28px 0 14px}.cloud-usage-numbers>strong{font-size:28px}.cloud-usage-numbers>span{font-size:13px;color:var(--muted)}.cloud-account-storage progress{display:block;width:100%;height:9px;border:0;appearance:none;border-radius:9px;overflow:hidden;background:var(--line);accent-color:var(--accent)}.cloud-account-storage progress::-webkit-progress-bar{background:var(--line)}.cloud-account-storage progress::-webkit-progress-value{background:var(--accent);border-radius:9px}.cloud-account-storage progress::-moz-progress-bar{background:var(--accent)}.cloud-account-storage .cloud-warning{color:#b77e3e}.cloud-account-storage details{font-size:13px;color:var(--muted);margin-top:20px}.cloud-account-storage summary{cursor:pointer}.cloud-vault-row{display:flex;align-items:center;justify-content:space-between;gap:18px;padding-top:20px;margin-top:20px;border-top:1px solid var(--line)}.cloud-vault-row>div{display:grid;gap:6px;min-width:0;overflow-wrap:anywhere}.cloud-delete{padding:9px 0;background:none;border:0;font:inherit;font-size:13px;color:var(--error);cursor:pointer}.cloud-vaults{font-size:14px;line-height:1.6;color:var(--muted)}.cloud-delete-dialog h2{overflow-wrap:anywhere}.cloud-delete-dialog label{display:grid;gap:8px;font-size:14px}.cloud-delete-dialog input{width:100%;padding:12px;border:1px solid var(--line);border-radius:9px;background:var(--canvas);color:var(--text);font:inherit}@media(max-width:600px){.cloud-vault-row{flex-wrap:wrap}.cloud-usage-numbers>strong{font-size:24px}}
+
+/* Account sections remain visually distinct at every viewport size. */
+.sync-page,.download-page,.account-page{user-select:none;-webkit-user-select:none}
+input,textarea,[contenteditable=true]{user-select:text;-webkit-user-select:text}
+#account-section{display:flex;flex-direction:column;gap:24px}
+#account-section>.account-section-heading{margin-bottom:8px}
+#account-section>.profile-card,#account-section>.account-settings-card{margin:0}
+.account-edit-dialog.signout-dialog{width:min(560px,calc(100% - 32px))!important}
+.signout-dialog h2{white-space:normal!important;font-size:23px!important;line-height:1.35}
+.signout-dialog .profile-actions{justify-content:flex-end!important;gap:12px}
+.sync-device-scene{background:radial-gradient(ellipse at 25% 20%,#5276c52b,transparent 65%),linear-gradient(135deg,var(--paper),var(--panel))}
+.cloud-account-storage{background:radial-gradient(ellipse at 100% 0%,#5276c51c,transparent 65%),var(--panel)}
+.cloud-account-storage>header{display:flex;align-items:center;justify-content:space-between}
+.cloud-usage-numbers{font-variant-numeric:tabular-nums}
+
+body[data-page="/sync"],body[data-page="/download"],body[data-page="/account"]{user-select:none;-webkit-user-select:none}
+body input,body textarea{user-select:text;-webkit-user-select:text}
+.cloud-account-storage .cloud-usage-numbers strong{font-size:clamp(28px,3vw,40px);letter-spacing:-.03em}
+.cloud-account-storage progress{height:11px;border-radius:999px}
+.sync-feature-grid article{padding:28px;border:1px solid var(--line);border-radius:22px;background:linear-gradient(145deg,var(--paper),var(--panel))}
+.sync-feature-grid article>svg{color:var(--accent);margin-bottom:12px}
+.sync-desktop{border-top:3px solid var(--accent)}

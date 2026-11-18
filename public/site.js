@@ -219,9 +219,10 @@ function hasSyncAccess(entry) {
   return entry.syncGrantedAt !== null && (entry.syncExpiresAt === null || entry.syncExpiresAt > Date.now());
 }
 
+function formatAccessExpiry(value){return new Intl.DateTimeFormat('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZoneName:'short'}).format(value);}
 function syncExpiration(entry) {
   return entry.syncExpiresAt === null ? 'бессрочно' : 'до ' + new Intl.DateTimeFormat('ru-RU', {
-    dateStyle: 'medium', timeStyle: 'short',
+    day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZoneName:'short',
   }).format(entry.syncExpiresAt);
 }
 
@@ -324,14 +325,21 @@ async function loadCloudPanel(host){
  host.innerHTML='<p class="muted" role="status">Загружаем облачное хранилище…</p>';
  try{
   const {vaults,storage}=await api('account/storage');if(!host.isConnected)return;
-  const percent=Math.min(100,Math.round(storage.usedBytes/storage.quotaBytes*100));
-  host.innerHTML='<header><h2>Облачное хранилище</h2><button class="cloud-refresh" aria-label="Обновить объём">↻</button></header><div class="cloud-usage-numbers"><strong></strong><span></span></div><progress aria-label="Занято места в облаке"></progress><p class="cloud-usage-status muted"></p><div class="cloud-vaults"></div><details><summary>Что входит в объём</summary><p class="muted">Фактический размер заметок, досок, канбана, папок и значков. Вложения пока не передаются. Фотографии на досках — до 5 МБ каждая.</p></details>';
+  host.classList.add('cloud-meter');
+  const ratio=Math.max(0,Math.min(100,storage.usedBytes/storage.quotaBytes*100));
+  const percent=ratio>0&&ratio<.1?'Менее 0,1%':ratio.toLocaleString('ru-RU',{maximumFractionDigits:ratio<1?1:0})+'%';
+  const days=storage.expiresAt===null?null:Math.ceil((storage.expiresAt-Date.now())/86400000);
+  const active=(storage.accessActive??hasSyncAccess(account))&&(days===null||days>0);
+  host.innerHTML='<header class="cloud-meter-header"><span class="cloud-meter-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M7 18a5 5 0 1 1 0-10 6 6 0 0 1 11.7 1.8A4.2 4.2 0 0 1 18 18Z"/></svg></span><div><h2>Облачное хранилище</h2><p>Синхронизация X.Vex</p></div><span class="cloud-meter-percent"></span></header><div class="cloud-meter-stats cloud-usage-numbers"><div><strong data-used></strong><span class="cloud-meter-capacity">/ <strong></strong></span></div><div><span>Свободно</span><strong data-free></strong></div></div><progress aria-label="Занято места в облаке"></progress><p class="cloud-usage-status cloud-meter-warning muted"></p><div class="cloud-meter-access"><span class="cloud-access-symbol" aria-hidden="true"></span><div><strong></strong><span></span></div></div><div class="cloud-vaults"></div><details class="cloud-meter-details"><summary>Что занимает место в облаке</summary><button class="cloud-refresh" type="button">Обновить данные</button><div class="cloud-meter-explanation"><div><strong>Материалы хранилища</strong><p>Заметки, доски, канбан, папки и значки. Показываем их фактический размер в облаке.</p></div></div><div class="cloud-meter-explanation"><div><strong>Изображения — до 5 МБ каждое</strong><p>Их размер тоже учитывается в занятом объёме. Отдельные файловые вложения пока остаются только на устройстве.</p></div></div></details>';
   host.querySelector('.cloud-refresh').onclick=()=>void loadCloudPanel(host);
-  host.querySelector('strong').textContent=cloudBytes(storage.usedBytes)+' ';
-  const quota=document.createElement('small');quota.textContent='/ '+cloudBytes(storage.quotaBytes);host.querySelector('strong').append(quota);
-  const badge=document.createElement('span');badge.className='cloud-percent-badge'+(storage.nearLimit?' is-warning':'');badge.textContent=percent+'% занято';host.querySelector('header').insertBefore(badge,host.querySelector('.cloud-refresh'));
-  host.querySelector('h2').insertAdjacentHTML('afterbegin','<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 18a5 5 0 1 1 0-10 6 6 0 0 1 11.7 1.8A4.2 4.2 0 0 1 18 18Z"/></svg>');
-  host.querySelector('.cloud-usage-numbers>span').textContent='Свободно '+cloudBytes(storage.availableBytes);
+  host.querySelector('[data-used]').textContent=cloudBytes(storage.usedBytes);
+  host.querySelector('[data-free]').textContent=cloudBytes(storage.availableBytes);
+  host.querySelector('.cloud-meter-capacity strong').textContent=cloudBytes(storage.quotaBytes);
+  const badge=host.querySelector('.cloud-meter-percent');badge.textContent=percent+' занято';badge.classList.toggle('is-warning',storage.nearLimit);
+  const access=host.querySelector('.cloud-meter-access');access.dataset.active=String(active);
+  access.querySelector('.cloud-access-symbol').textContent=active&&days===null?'∞':'◷';
+  access.querySelector('strong').textContent=!active?(days!==null&&days<=0?'Доступ закончился '+formatAccessExpiry(storage.expiresAt):'Доступ не подключён'):days===null?'Бессрочный доступ':'Доступ до '+formatAccessExpiry(storage.expiresAt);
+  access.querySelector(':scope > div > span').textContent=active?(days===null?'Без даты окончания':days<=7?'Продли доступ заранее, чтобы продолжить синхронизацию':'Синхронизация доступна на твоих устройствах'):'Локальные материалы остаются на устройстве';
   const progress=host.querySelector('progress');progress.max=storage.quotaBytes;progress.value=Math.min(storage.usedBytes,storage.quotaBytes);
   const notices=[];if(storage.nearLimit)notices.push(storage.full?'Облако заполнено. Новые изменения сохраняются на устройстве. Освободи место для отправки в облако.':'Место почти закончилось. Если облако заполнится, изменения продолжат сохраняться локально.');
   if(storage.expiresAt!==null&&storage.expiresAt-Date.now()<=7*86400000)notices.push(storage.expiresAt<=Date.now()?'Доступ к синхронизации закончился. Локальные материалы сохранены.':'Доступ к синхронизации заканчивается через '+Math.ceil((storage.expiresAt-Date.now())/86400000)+' дн.');
